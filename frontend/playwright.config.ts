@@ -1,4 +1,5 @@
 import { defineConfig } from '@playwright/test';
+const port = process.env.AEGIS_E2E_PORT ?? '8001';
 export default defineConfig({
   testDir: './e2e',
   workers: 1,
@@ -7,14 +8,14 @@ export default defineConfig({
   use: {
     channel: 'chrome',
     launchOptions: { args: ['--use-angle=d3d11'] },
-    baseURL: 'http://127.0.0.1:8001',
+    baseURL: `http://127.0.0.1:${port}`,
     viewport: { width: 1440, height: 1000 },
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },
   webServer: {
     command: '"../.venv/Scripts/python.exe" ../scripts/e2e_server.py',
-    url: 'http://127.0.0.1:8001/api/health',
+    url: `http://127.0.0.1:${port}/api/health`,
     reuseExistingServer: false,
     timeout: 30000,
   },

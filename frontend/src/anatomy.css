@@ -2080,6 +2080,184 @@ button.sensing-chip:hover {
   background: #fffcf8cc;
   box-shadow: 0 0 0 1px rgba(183, 45, 38, 0.28);
 }
+
+/* System plates use local decoded media; only the overview creates a WebGL canvas. */
+.system-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+.system-media > img,
+.system-media-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+.system-media-current {
+  animation: system-media-reveal 600ms ease both;
+}
+.system-media-previous {
+  z-index: -1;
+}
+.system-media-caption {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+  font-size: 10px;
+  color: #857c74;
+  letter-spacing: 0.025em;
+  padding: 7px 12px;
+  border-radius: 20px;
+  background: #f7f3efde;
+}
+.system-media-caption button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+.system-media.compact {
+  inset: 0 18px;
+}
+.system-media-error {
+  position: absolute;
+  bottom: 65px;
+  left: 20px;
+  right: 20px;
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  background: var(--paper);
+}
+.system-media-error button {
+  margin-left: 14px;
+  text-decoration: underline;
+}
+.system-assessment {
+  margin: 24px 0;
+  display: grid;
+  gap: 12px;
+}
+.system-assessment > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #eee7e255;
+  padding: 22px;
+  border-radius: 16px;
+}
+.system-assessment > div:first-child {
+  background: #f2e2de66;
+}
+.system-assessment svg {
+  margin-top: 1px;
+  flex-shrink: 0;
+  color: #9d6256;
+}
+.system-assessment h2 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  margin-bottom: 7px;
+}
+.system-assessment p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #74685f;
+}
+.system-assessment details {
+  padding: 8px 5px;
+}
+.system-assessment summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: #85766a;
+}
+.system-assessment details p {
+  margin-top: 10px;
+}
+.system-assessment small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #9a8a7c;
+  margin-top: 8px;
+}
+.section-switch {
+  position: absolute;
+  top: 78px;
+  left: 44px;
+  max-width: 190px;
+  display: grid;
+  gap: 7px;
+  z-index: 3;
+}
+.section-switch > span {
+  color: var(--secondary);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.section-switch select {
+  width: 185px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fbf8f4e8;
+  color: var(--ink);
+  font-size: 12px;
+  cursor: pointer;
+}
+@keyframes system-media-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (min-width: 901px) {
+  .anatomy-stage.focused {
+    left: 0;
+    right: 40%;
+    top: 85px;
+    bottom: 40px;
+  }
+  .is-focused .anatomy-inspector {
+    width: 35%;
+  }
+}
+@media (max-width: 900px) {
+  .section-switch {
+    display: none;
+  }
+  .anatomy-stage.focused {
+    height: 570px;
+  }
+  .system-media:not(.compact) {
+    inset: 85px 0 0;
+  }
+  .system-media-caption {
+    bottom: 5px;
+    font-size: 9px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .system-media-current {
+    animation: none;
+  }
+}
 @media (max-width: 900px) {
   .anatomy-marker-label {
     max-width: 128px;
@@ -2100,4 +2278,57 @@ button.sensing-chip:hover {
     animation: none;
     opacity: 0.4;
   }
+}
+
+/* ---------- Section entry: 3D zoom first, then the section media fades over the stage ---------- */
+.stage-media {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  transform: scale(1.03);
+  pointer-events: none;
+  transition:
+    opacity 900ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 1400ms cubic-bezier(0.23, 1, 0.32, 1);
+  /* Melt all four edges into the paper instead of showing a rectangle. */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 9%, #000 86%, transparent),
+    linear-gradient(to bottom, transparent, #000 10%, #000 88%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 9%, #000 86%, transparent),
+    linear-gradient(to bottom, transparent, #000 10%, #000 88%, transparent);
+  mask-composite: intersect;
+}
+.stage-media.shown {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.stage-media .system-media > img,
+.stage-media .system-media-video {
+  object-fit: cover;
+  object-position: center 42%;
+}
+.stage-media .system-media-caption {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+/* The zoomed section is quiet: only the way back stays on the left. */
+.is-focused .anatomy-mission-context,
+.is-focused .anatomy-replay,
+.is-focused .anatomy-data-menu,
+.is-focused .section-switch,
+.is-focused .anatomy-ground-shadow {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-media {
+    transition: opacity 200ms linear;
+    transform: none;
+  }
+}
+.stage-media .system-media-caption {
+  bottom: 13%;
 }

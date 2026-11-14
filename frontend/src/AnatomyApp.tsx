@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   ArrowDownToLine,
@@ -22,7 +22,7 @@ import {
   X,
 } from 'lucide-react';
 
-import { anatomySystems, evaluationColor } from './anatomyConfig';
+import { anatomySystems, CAMERA_DURATION_MS, evaluationColor } from './anatomyConfig';
 import { buildMarkers, fmt, isDormant, shortName, statusText } from './lib';
 import SensingRoute from './SensingRoute';
 import type { Analysis } from './types';
@@ -31,16 +31,13 @@ import SystemIcon from './SystemIcon';
 import MissionDialogs from './MissionDialogs';
 import type { DialogName } from './MissionDialogs';
 import type { LayersState } from './AnatomyViewer';
+import SystemMedia from './SystemMedia';
+import SystemAssessment from './SystemAssessment';
+import { prefetchSection } from './sectionMedia';
 import './anatomy.css';
 
 const TrendPanel = lazy(() => import('./TrendPanel'));
 const AnatomyViewer = lazy(() => import('./AnatomyViewer'));
-const OrganPreview = lazy(() =>
-  import('./AnatomyViewer').then((m) => ({ default: m.OrganPreview })),
-);
-/** Intent-based prefetch of a system's detail geometry (hover/focus before click). */
-const prefetch = (region: string) =>
-  void import('./AnatomyViewer').then((m) => m.prefetchDetail(region));
 const dataStateText: Record<string, string> = {
   stale: 'Medición caducada',
   missing: 'Medición ausente',
@@ -66,7 +63,6 @@ export default function AnatomyApp() {
   const [region, setRegion] = useState('heart'),
     [metric, setMetric] = useState('heart_rate'),
     [focused, setFocused] = useState(false);
-  const [modelReady, setModelReady] = useState(false);
   const [tab, setTab] = useState<'state' | 'trend' | 'detail'>('state'),
     [modal, setModal] = useState<DialogName>(null);
   const [back, setBack] = useState(false),
@@ -110,7 +106,17 @@ export default function AnatomyApp() {
     [allMarkers, focused, region],
   );
   const isAlert = regionalStatus === 'review' || regionalStatus === 'emergency';
+  // Section entry: the 3D camera zooms to the system, holds briefly, then the media fades in.
+  const [mediaShown, setMediaShown] = useState(false);
+  useEffect(() => {
+    setMediaShown(false);
+    if (!focused) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const timer = window.setTimeout(() => setMediaShown(true), reduce ? 0 : CAMERA_DURATION_MS + 650);
+    return () => window.clearTimeout(timer);
+  }, [focused, region]);
   function selectRegion(id: string) {
+    setLayersOpen(false);
     setRegion(id);
     setFocused(true);
     setBack(false);
@@ -236,10 +242,10 @@ export default function AnatomyApp() {
       <section className={`anatomy-stage ${focused ? 'focused' : ''}`}>
         <Suspense fallback={<div className="anatomy-loader">Preparando visualización…</div>}>
           <AnatomyViewer
-            onReady={() => setModelReady(true)}
-            markers={markers}
+            markers={focused ? [] : markers}
             selected={region}
             focused={focused}
+            isolate={false}
             states={states}
             onSelect={selectRegion}
             layers={layers}
@@ -247,59 +253,76 @@ export default function AnatomyApp() {
             reset={reset}
           />
         </Suspense>
-        <div className="anatomy-view-controls">
-          <button aria-label="Volver al cuerpo completo" title="Cuerpo completo" onClick={overview}>
-            <Maximize2 size={17} />
-          </button>
-          <button
-            aria-label={back ? 'Vista anterior' : 'Vista posterior'}
-            title={back ? 'Vista anterior' : 'Vista posterior'}
-            onClick={() => {
-              setFocused(false);
-              setBack((b) => !b);
-              setReset((r) => r + 1);
-            }}
+        {focused && (
+          <div
+            className={`stage-media ${mediaShown ? 'shown' : ''}`}
+            aria-hidden={!mediaShown}
+            data-shown={mediaShown}
           >
-            <RotateCcw size={17} />
-          </button>
-          <button
-            aria-label="Control de capas"
-            title="Capas anatómicas"
-            aria-expanded={layersOpen}
-            onClick={() => setLayersOpen((o) => !o)}
-          >
-            <Layers size={17} />
-          </button>
-        </div>
-        {layersOpen && (
-          <div className="anatomy-layers">
-            <div>
-              <strong>Capas anatómicas</strong>
-              <button aria-label="Cerrar capas" onClick={() => setLayersOpen(false)}>
-                <X size={15} />
-              </button>
-            </div>
-            {Object.entries({
-              skin: 'Piel',
-              muscles: 'Musculatura',
-              skeleton: 'Estructura ósea',
-              organs: 'Órganos y sistema nervioso',
-            }).map(([key, label]) => (
-              <label key={key}>
-                <input
-                  type="checkbox"
-                  checked={layers[key as keyof LayersState]}
-                  onChange={(e) => setLayers({ ...layers, [key]: e.target.checked })}
-                />
-                {label}
-              </label>
-            ))}
+            <SystemMedia region={region} />
           </div>
         )}
-        <div className="anatomy-gesture">
-          <MousePointer2 size={13} />
-          <span>Arrastra para girar · selecciona un sistema para acercar</span>
-        </div>
+        {!focused && (
+          <>
+            <div className="anatomy-view-controls">
+              <button
+                aria-label="Volver al cuerpo completo"
+                title="Cuerpo completo"
+                onClick={overview}
+              >
+                <Maximize2 size={17} />
+              </button>
+              <button
+                aria-label={back ? 'Vista anterior' : 'Vista posterior'}
+                title={back ? 'Vista anterior' : 'Vista posterior'}
+                onClick={() => {
+                  setFocused(false);
+                  setBack((b) => !b);
+                  setReset((r) => r + 1);
+                }}
+              >
+                <RotateCcw size={17} />
+              </button>
+              <button
+                aria-label="Control de capas"
+                title="Capas anatómicas"
+                aria-expanded={layersOpen}
+                onClick={() => setLayersOpen((o) => !o)}
+              >
+                <Layers size={17} />
+              </button>
+            </div>
+            {layersOpen && (
+              <div className="anatomy-layers">
+                <div>
+                  <strong>Capas anatómicas</strong>
+                  <button aria-label="Cerrar capas" onClick={() => setLayersOpen(false)}>
+                    <X size={15} />
+                  </button>
+                </div>
+                {Object.entries({
+                  skin: 'Piel',
+                  muscles: 'Musculatura',
+                  skeleton: 'Estructura ósea',
+                  organs: 'Órganos y sistema nervioso',
+                }).map(([key, label]) => (
+                  <label key={key}>
+                    <input
+                      type="checkbox"
+                      checked={layers[key as keyof LayersState]}
+                      onChange={(e) => setLayers({ ...layers, [key]: e.target.checked })}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            )}
+            <div className="anatomy-gesture">
+              <MousePointer2 size={13} />
+              <span>Arrastra para girar · selecciona un sistema para acercar</span>
+            </div>
+          </>
+        )}
       </section>
       <aside className="anatomy-navigation" aria-label="Sistemas corporales">
         {focused && (
@@ -310,6 +333,22 @@ export default function AnatomyApp() {
             Vista general
           </button>
         )}
+        {focused && (
+          <label className="section-switch">
+            <span>Sistema</span>
+            <select
+              aria-label="Cambiar sistema"
+              value={region}
+              onChange={(event) => selectRegion(event.target.value)}
+            >
+              {anatomySystems.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <div className="anatomy-system-buttons">
           {anatomySystems.map((s) => {
             const alert = states[s.id] === 'review' || states[s.id] === 'emergency';
@@ -319,8 +358,8 @@ export default function AnatomyApp() {
                 className={`anatomy-system ${region === s.id ? 'selected' : ''} ${alert ? 'has-alert' : ''}`}
                 aria-pressed={region === s.id}
                 onClick={() => selectRegion(s.id)}
-                onPointerEnter={() => prefetch(s.id)}
-                onFocus={() => prefetch(s.id)}
+                onPointerEnter={() => prefetchSection(s.id)}
+                onFocus={() => prefetchSection(s.id)}
               >
                 <SystemIcon id={s.id} />
                 <span>{s.name}</span>
@@ -438,18 +477,11 @@ export default function AnatomyApp() {
         )}
         {!focused && tab === 'state' && (
           <div className="anatomy-organ-preview">
-            <Suspense fallback={<span>Preparando órgano…</span>}>
-              {modelReady ? (
-                <OrganPreview selected={region} status={regionalStatus} />
-              ) : (
-                <span>Preparando órgano…</span>
-              )}
-            </Suspense>
+            <SystemMedia region={region} compact />
             <button
               aria-label={`Ampliar ${system.name}`}
               onClick={() => {
-                setFocused(true);
-                setReset((r) => r + 1);
+                selectRegion(region);
               }}
             >
               <Maximize2 size={19} />
@@ -476,7 +508,8 @@ export default function AnatomyApp() {
             <div className="anatomy-metrics">
               {([1, 2] as const).map((layer) => {
                 const rows = analyses.filter(
-                  (a) => (definitions.find((d) => d.id === a.metric_id)?.sensing_layer ?? 1) === layer,
+                  (a) =>
+                    (definitions.find((d) => d.id === a.metric_id)?.sensing_layer ?? 1) === layer,
                 );
                 if (!rows.length) return null;
                 return (
@@ -510,6 +543,14 @@ export default function AnatomyApp() {
               </span>
               <ChevronRight size={19} />
             </button>
+            {focused && (
+              <SystemAssessment
+                region={region}
+                status={regionalStatus}
+                analyses={analyses.filter((a) => !isDormant(a, registry, pathways))}
+                guidance={data?.guidance ?? []}
+              />
+            )}
             {routes.length > 0 &&
               (focused ? (
                 <div className="sensing-routes">

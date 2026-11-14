@@ -36,6 +36,8 @@ interface Props {
   reset: number;
   markers?: BodyMarker[];
   onReady?: () => void;
+  /** false: focusing only moves the camera; every layer stays as in overview (no detail swap). */
+  isolate?: boolean;
 }
 interface MeshInfo {
   mesh: Mesh;
@@ -103,61 +105,65 @@ interface Look {
   roughness: number;
   /** Alpha multiplier at normal incidence; 1 = uniformly opaque. */
   core: number;
+  /** Optional core above the neck, so the face reads as a face rather than a skull. */
+  headCore?: number;
   power: number;
   rim: string;
   rimStrength: number;
 }
 const ORGAN: Omit<Look, 'color'> = {
-  roughness: 0.5,
-  core: 0.86,
+  roughness: 0.42,
+  core: 0.88,
   power: 2.2,
-  rim: '#fff0e8',
-  rimStrength: 0.14,
+  rim: '#ffffff',
+  rimStrength: 0.18,
 };
+/** Porcelain studio palette: frosted white tissue, ivory bone, red only where blood is. */
 const LOOKS: Record<string, Look> = {
   skin: {
-    color: '#eedfd3',
-    roughness: 0.46,
-    core: 0.07,
-    power: 2.6,
-    rim: '#fffaf4',
-    rimStrength: 0.42,
+    color: '#e4dfdb',
+    roughness: 0.36,
+    core: 0.18,
+    headCore: 1,
+    power: 2.1,
+    rim: '#ffffff',
+    rimStrength: 0.55,
   },
   muscle: {
-    color: '#c27766',
-    roughness: 0.46,
-    core: 0.5,
-    power: 1.6,
-    rim: '#f6cdbf',
-    rimStrength: 0.2,
+    color: '#d3c6be',
+    roughness: 0.4,
+    core: 0.72,
+    power: 1.5,
+    rim: '#fbf4f0',
+    rimStrength: 0.24,
   },
   tendon: {
-    color: '#e9ddcc',
-    roughness: 0.38,
-    core: 0.55,
+    color: '#e6ded6',
+    roughness: 0.34,
+    core: 0.6,
     power: 1.5,
-    rim: '#fffaf2',
-    rimStrength: 0.14,
+    rim: '#ffffff',
+    rimStrength: 0.2,
   },
   skeleton: {
-    color: '#ece1cc',
-    roughness: 0.62,
-    core: 0.94,
+    color: '#f1ece3',
+    roughness: 0.55,
+    core: 0.95,
     power: 2.4,
-    rim: '#fff9ee',
-    rimStrength: 0.12,
+    rim: '#ffffff',
+    rimStrength: 0.14,
   },
-  lung: { ...ORGAN, color: '#dfbab1', core: 0.42, power: 1.5, rimStrength: 0.24 },
-  airway: { ...ORGAN, color: '#e6cfc1' },
-  digestive: { ...ORGAN, color: '#dcb9a3' },
-  liver: { ...ORGAN, color: '#a35c4c' },
-  viscera: { ...ORGAN, color: '#d6b09d' },
-  kidney: { ...ORGAN, color: '#a85e4e' },
-  brain: { ...ORGAN, color: '#e3c4ba' },
-  eye: { ...ORGAN, color: '#f3f0e9' },
-  cardiac: { ...ORGAN, color: '#b45a4a', core: 0.95 },
-  cardiac_artery: { ...ORGAN, color: '#b55b4c', core: 0.95 },
-  cardiac_vein: { ...ORGAN, color: '#9d6560', core: 0.95 },
+  lung: { ...ORGAN, color: '#d8d3d0', core: 0.45, power: 1.4, rimStrength: 0.32 },
+  airway: { ...ORGAN, color: '#e7e0da' },
+  digestive: { ...ORGAN, color: '#ddd5cf' },
+  liver: { ...ORGAN, color: '#d3c7c0' },
+  viscera: { ...ORGAN, color: '#ddd4ce' },
+  kidney: { ...ORGAN, color: '#d8c9c2' },
+  brain: { ...ORGAN, color: '#e8e0dc' },
+  eye: { ...ORGAN, color: '#f4f1eb' },
+  cardiac: { ...ORGAN, color: '#c94636', core: 0.97, rim: '#ffd9cf' },
+  cardiac_artery: { ...ORGAN, color: '#cf4e3e', core: 0.97, rim: '#ffd9cf' },
+  cardiac_vein: { ...ORGAN, color: '#b6574f', core: 0.97, rim: '#ffd9cf' },
 };
 const ALERT_COLOR = new Color('#de3b2c');
 const REGION_INDEX = ['heart', 'lungs', 'kidneys', 'brain', 'skeleton', 'muscles', 'metabolic', 'skin'];
@@ -179,7 +185,7 @@ function createSpots(): SpotUniforms {
 }
 
 const FRAGMENT_HEAD = `varying vec3 vAegisWorld;
-uniform float aegisCore, aegisPower, aegisRimStrength;
+uniform float aegisCore, aegisHeadCore, aegisPower, aegisRimStrength;
 uniform vec3 aegisRim, aegisSpotColor;
 uniform vec4 aegisSpots[${MAX_SPOTS}];
 uniform int aegisSpotRegion[${MAX_SPOTS}];
@@ -195,7 +201,8 @@ for (int i = 0; i < ${MAX_SPOTS}; i++) {
 }
 outgoingLight += aegisRim * aegisF * aegisRimStrength;
 outgoingLight = mix(outgoingLight, aegisSpotColor * (0.8 + 0.45 * aegisF), aegisOwn * 0.72 + aegisNear * 0.16);
-diffuseColor.a *= mix(aegisCore, 1.0, aegisF);
+float aegisCoreHere = mix(aegisCore, aegisHeadCore, smoothstep(1.5, 1.56, vAegisWorld.y));
+diffuseColor.a *= mix(aegisCoreHere, 1.0, aegisF);
 diffuseColor.a = max(diffuseColor.a, opacity * aegisOwn * 0.92);
 #include <opaque_fragment>`;
 
@@ -208,10 +215,11 @@ function materialFor(tissue: string, region: string, spots: SpotUniforms) {
     transparent: true,
     opacity: 1,
     depthWrite: false,
-    envMapIntensity: tissue === 'skin' ? 0.9 : 0.6,
+    envMapIntensity: tissue === 'skin' ? 1 : 0.75,
   });
   const uniforms = {
     aegisCore: { value: look.core },
+    aegisHeadCore: { value: look.headCore ?? look.core },
     aegisPower: { value: look.power },
     aegisRim: { value: new Color(look.rim) },
     aegisRimStrength: { value: look.rimStrength },
@@ -232,7 +240,7 @@ function materialFor(tissue: string, region: string, spots: SpotUniforms) {
       .replace('#include <opaque_fragment>', FRAGMENT_BODY);
   };
   // Every tissue shares one compiled program; only uniform values differ.
-  material.customProgramCacheKey = () => 'aegis-tissue-v2';
+  material.customProgramCacheKey = () => 'aegis-tissue-v3';
   return material;
 }
 
@@ -275,17 +283,29 @@ function prepareScene(source: Group, interactive = true) {
   return { scene, parts, spots };
 }
 
-/** Target opacity per piece. Overview reads as a translucent person; focus isolates one system. */
-function opacityFor(part: MeshInfo, selected: string, focused: boolean) {
+type ViewMode = 'overview' | 'zoom' | 'isolate';
+/**
+ * Target opacity per piece. Overview reads as a visible porcelain person; zoom keeps that
+ * context and only clears the way to the selected system; isolate fades everything else.
+ */
+function opacityFor(part: MeshInfo, selected: string, mode: ViewMode) {
   const { region, tissue } = part;
   const active = region === selected;
-  if (region === 'skin') return focused ? 0.3 : 0.62;
-  if (tissue === 'tendon') return active ? 0.85 : focused ? 0.06 : 0.3;
-  if (region === 'muscles') return active ? 0.94 : focused ? 0.08 : 0.46;
-  if (region === 'skeleton') return active ? 0.98 : focused ? 0.2 : 0.86;
-  if (tissue === 'lung') return active ? 0.86 : focused ? 0.12 : 0.44;
-  if (active) return 0.98;
-  return focused ? 0.16 : 0.82;
+  if (mode === 'isolate') {
+    if (region === 'skin') return 0.3;
+    if (tissue === 'tendon') return active ? 0.85 : 0.06;
+    if (region === 'muscles') return active ? 0.94 : 0.08;
+    if (region === 'skeleton') return active ? 0.98 : 0.2;
+    if (tissue === 'lung') return active ? 0.86 : 0.12;
+    return active ? 0.98 : 0.16;
+  }
+  const zoom = mode === 'zoom';
+  if (region === 'skin') return zoom ? 0.5 : 0.64;
+  if (tissue === 'tendon') return active ? 0.85 : zoom ? 0.3 : 0.45;
+  if (region === 'muscles') return active ? 0.94 : zoom ? 0.46 : 0.72;
+  if (region === 'skeleton') return active ? 0.98 : 0.9;
+  if (tissue === 'lung') return active ? 0.86 : zoom ? 0.42 : 0.5;
+  return active ? 0.98 : 0.86;
 }
 
 const layerOf = (part: MeshInfo): keyof LayersState =>
@@ -296,6 +316,7 @@ const layerOf = (part: MeshInfo): keyof LayersState =>
 function Anatomy({
   selected,
   focused,
+  isolate = true,
   onSelect,
   layers,
   onReady,
@@ -306,6 +327,7 @@ function Anatomy({
 }: {
   selected: string;
   focused: boolean;
+  isolate?: boolean;
   onSelect: (id: string) => void;
   layers: LayersState;
   onReady: () => void;
@@ -336,7 +358,7 @@ function Anatomy({
   useEffect(() => {
     for (const part of parts) {
       part.mesh.visible = visible && layers[layerOf(part)] && part.region !== hiddenRegion;
-      const target = opacityFor(part, selected, focused);
+      const target = opacityFor(part, selected, !focused ? 'overview' : isolate ? 'isolate' : 'zoom');
       part.material.userData.targetOpacity = target;
       if (!part.material.userData.initialized) {
         part.material.opacity = target;
@@ -345,7 +367,7 @@ function Anatomy({
       part.material.depthWrite = target >= 0.95 && (part.material.userData.look as Look).core > 0.9;
     }
     invalidate();
-  }, [parts, selected, focused, layers, invalidate, hiddenRegion, visible]);
+  }, [parts, selected, focused, isolate, layers, invalidate, hiddenRegion, visible]);
   useFrame((_, delta) => {
     const alpha = 1 - Math.exp(-delta * 9);
     let moving = false;
@@ -468,7 +490,7 @@ function StudioEnvironment() {
     const room = new RoomEnvironment();
     const texture = generator.fromScene(room, 0.04).texture;
     scene.environment = texture;
-    scene.environmentIntensity = 0.55;
+    scene.environmentIntensity = 0.42;
     invalidate();
     return () => {
       scene.environment = null;
@@ -484,7 +506,7 @@ function Studio() {
   return (
     <>
       <StudioEnvironment />
-      <hemisphereLight args={['#fffaf3', '#a39484', 0.55]} />
+      <hemisphereLight args={['#fffaf3', '#8f8276', 0.4]} />
       <directionalLight position={[2.2, 3.4, 3.6]} intensity={1.55} color="#fff6ea" />
       <directionalLight position={[-3, 1.8, 1.2]} intensity={0.45} color="#eef1ff" />
       <directionalLight position={[0.4, 2.6, -3.2]} intensity={1.25} color="#fffaf4" />
@@ -589,7 +611,6 @@ function MarkerLayer({
           <button
             className="anatomy-marker-label"
             onClick={() => onSelect(m.region)}
-            onPointerEnter={() => prefetchDetail(m.region)}
           >
             <strong>{m.title}</strong>
             <small>{m.detail}</small>
@@ -671,9 +692,13 @@ export default function AnatomyViewer(props: Props) {
               {...props}
               markers={markers}
               onReady={readyRef.current}
-              hiddenRegion={props.focused && detailRegion === props.selected ? detailRegion : null}
+              hiddenRegion={
+                props.focused && props.isolate !== false && detailRegion === props.selected
+                  ? detailRegion
+                  : null
+              }
             />
-            {props.focused && (
+            {props.focused && props.isolate !== false && (
               <DetailBoundary
                 key={`${props.selected}-${retry}`}
                 onFailure={() => setFailedDetail(props.selected)}

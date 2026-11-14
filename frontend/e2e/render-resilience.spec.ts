@@ -21,36 +21,53 @@ test('vertical drag and wheel cannot move or incline the body', async ({ page })
   const distance = (s: typeof before) => Math.hypot(...s.camera.map((v, i) => v - s.target[i]));
   expect(distance(after)).toBeCloseTo(distance(before), 3);
 });
-test('delayed details and fast region changes preserve a live base model', async ({ page }) => {
-  await page.route('**/models/detail-brain.glb', async (route) => {
-    await new Promise((r) => setTimeout(r, 1600));
-    await route.continue();
+test('rapid section changes settle on the right image without requesting detail GLBs', async ({
+  page,
+}) => {
+  const details: string[] = [];
+  const errors: string[] = [];
+  page.on('request', (r) => {
+    if (r.url().includes('/models/detail-')) details.push(r.url());
   });
+  page.on('pageerror', (error) => errors.push(error.message));
   await ready(page);
-  await page.getByRole('button', { name: 'Neurológico', exact: true }).click();
-  await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-detail-region', 'overview');
-  await expect(page.locator('.anatomy-canvas canvas')).toBeVisible();
-  await page.getByRole('button', { name: 'Volver al cuerpo completo', exact: true }).click();
+  const back = page.getByRole('button', { name: 'Vista general', exact: true });
+  for (const name of ['Neurológico', 'Óseo', 'Cardiovascular', 'Respiratorio', 'Renal']) {
+    await page.getByRole('button', { name, exact: true }).click();
+    await back.click();
+  }
   await page.getByRole('button', { name: 'Renal', exact: true }).click();
-  await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-detail-region', 'kidneys');
-  await page.waitForTimeout(1700);
-  await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-detail-region', 'kidneys');
-  await expect(page.locator('.anatomy-load-error')).toHaveCount(0);
+  const image = page.locator('.anatomy-stage .system-media-current');
+  await expect(image).toHaveAttribute('src', '/media/systems/kidneys.webp');
+  await expect(image).toBeVisible();
+  await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-camera-mode', 'kidneys');
+  expect(details).toEqual([]);
+  expect(errors).toEqual([]);
 });
-test('failed detail keeps the body visible and can be retried', async ({ page }) => {
+
+test('a failed section image is retryable and preserves the information panel', async ({
+  page,
+}) => {
   let fail = true;
-  await page.route('**/models/detail-skeleton.glb', (route) =>
+  await page.route('**/media/systems/skeleton.webp', (route) =>
     fail ? route.fulfill({ status: 503, body: 'temporary local failure' }) : route.continue(),
   );
   await ready(page);
   await page.getByRole('button', { name: 'Óseo', exact: true }).click();
-  await expect(page.locator('.anatomy-detail-note')).toContainText('se mantiene la vista ligera');
-  await expect(page.locator('.anatomy-canvas canvas')).toBeVisible();
+  await expect(page.locator('.system-media-error')).toBeVisible();
+  await expect(page.locator('.anatomy-metrics')).toBeVisible();
   fail = false;
-  await page.getByRole('button', { name: 'Reintentar', exact: true }).click();
-  await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-detail-region', 'skeleton');
-  await expect(page.locator('.anatomy-detail-note')).toHaveCount(0);
+  await page
+    .locator('.system-media-error')
+    .getByRole('button', { name: 'Reintentar', exact: true })
+    .click();
+  await expect(page.locator('.anatomy-stage .system-media-current')).toHaveAttribute(
+    'src',
+    '/media/systems/skeleton.webp',
+  );
+  await expect(page.locator('.system-media-error')).toHaveCount(0);
 });
+
 test('a restored WebGL context redraws without replacing the data view', async ({ page }) => {
   await ready(page);
   await page.locator('.anatomy-canvas canvas').evaluate((canvas: HTMLCanvasElement) => {

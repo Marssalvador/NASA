@@ -57,3 +57,17 @@ Las rutas de riesgo son hipótesis de diseño, no reglas clínicas: usar la fuer
 
 El brillo rojo y los marcadores indican un estado de evaluación de datos situado en un sitio anatómico aproximado; no representan lesión ni el punto de medición. Las coordenadas de los sitios se muestrearon sobre la malla general. Benchmark local (docs/performance/round3.json, Chrome ANGLE D3D11, 3 ejecuciones): interacción a ~60 fps sin tareas largas; tiempo hasta visor listo ≈1,8 s de mediana frente a ≈1,2 s en after.json, por la compilación del shader, el entorno PMREM y un dashboard mayor. La piel del modelo general pasó de 8.540 a 36.608 triángulos (total 271.963, 2,28 MB).
 
+
+
+### Secciones con im?genes locales (petici?n del usuario, 14 noviembre 2026)
+
+La vista general conserva el GLB real y la rotaci?n horizontal. Las siete secciones sustituyen el visor por ilustraciones anat?micas generadas con image_gen, servidas localmente como WebP. No hay WebGL ni solicitudes de mallas de detalle en las secciones; tambi?n se sustituy? el segundo canvas de previsualizaci?n por una imagen. El selector permite cambiar entre sistemas sin volver al cuerpo completo. Se decodifica antes de mostrar, se conserva la imagen anterior durante la transici?n de 600 ms y se descartan cargas de secciones anteriores. Los errores de imagen permiten reintentar sin perder la informaci?n.
+
+Se ley? el Word t?cnico aportado: se conserva la l?gica de sensado existente y se a?ade contexto descriptivo por sistema, interpretaci?n del estado real calculado y recomendaci?n sujeta a revisi?n m?dica. No se convirtieron sus rangos orientativos en umbrales cl?nicos ni se muestran diagn?sticos inventados. La personalizaci?n hormonal propuesta sigue pendiente.
+
+Esta entrega usa im?genes est?ticas. SystemMedia admite v?deos locales en bucle, poster, pausa, movimiento reducido y suspensi?n en pesta?a oculta; no se ha generado v?deo ni gastado el saldo de Sunra. Una uni?n invisible exige un clip preparado y revisado, no basta el atributo loop. Recursos, prompts y l?mites en docs/SECTION_MEDIA.md.
+
+### Secciones con zoom y vídeo (ronda 4)
+
+El atlas usa una paleta porcelana más opaca, con la piel de la cabeza casi opaca para que la cara se lea como cara. Al entrar en un sistema, la cámara se acerca sobre el mismo modelo (sin cambiar a mallas de detalle) y después aparece el medio de la sección. Solo Cardiovascular tiene vídeo: generado offline con Sunra (gpt-image-2 + Kling v3) y ralentizado localmente; ver docs/SECTION_MEDIA.md. Es una ilustración genérica generada por IA, sin revisión anatómica profesional, que no refleja datos ni lesiones del astronauta. Las capturas round4-home, round4-zoom y round4-section están en docs/visual-review/.
+

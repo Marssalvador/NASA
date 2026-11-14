@@ -12,16 +12,12 @@ async function open(page: import('@playwright/test').Page) {
   await expect(page.locator('.anatomy-metrics')).toContainText('Frecuencia cardíaca');
 }
 
-test('real atlas, cardiovascular camera, rotation and whole-body return', async ({ page }) => {
+test('real atlas rotates in overview; a system zooms in 3D, then plays its local loop', async ({
+  page,
+}) => {
   await open(page);
   await expect(page.locator('.anatomy-canvas[data-ready="true"]')).toBeVisible({ timeout: 30000 });
-  await expect(page.locator('.anatomy-organ-preview canvas')).toBeVisible();
-  await page.getByRole('button', { name: 'Cardiovascular', exact: true }).click();
-  await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-camera-mode', 'heart');
-  await expect(page.getByRole('tab', { name: 'Estado', exact: true })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  );
+  await expect(page.locator('.anatomy-organ-preview img.system-media-current')).toBeVisible();
   await page.waitForTimeout(700);
   const canvas = page.locator('.anatomy-canvas canvas');
   const bounds = await canvas.boundingBox();
@@ -36,7 +32,17 @@ test('real atlas, cardiovascular camera, rotation and whole-body return', async 
   await page.mouse.up();
   await page.waitForTimeout(300);
   expect(await canvas.screenshot()).not.toEqual(before);
-  await page.getByRole('button', { name: 'Volver al cuerpo completo', exact: true }).click();
+  await page.getByRole('button', { name: 'Cardiovascular', exact: true }).click();
+  // The 3D body stays mounted and zooms first; the section media fades in afterwards.
+  await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-camera-mode', 'heart');
+  await expect(page.locator('.anatomy-stage canvas')).toHaveCount(1);
+  await expect(page.locator('.stage-media')).toHaveAttribute('data-shown', 'true');
+  await expect(page.locator('.stage-media video')).toHaveAttribute('src', '/media/systems/heart.mp4');
+  await expect(page.locator('.anatomy-stage .system-media-current')).toBeVisible();
+  await expect(page.locator('.anatomy-marker')).toHaveCount(0);
+  await expect(page.locator('.anatomy-mission-context')).toBeHidden();
+  await expect(page.getByRole('region', { name: 'Interpretación del sistema' })).toBeVisible();
+  await page.getByRole('button', { name: 'Vista general', exact: true }).click();
   await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-camera-mode', 'overview');
 });
 
@@ -45,7 +51,10 @@ test('systems, missing data, provenance and uncertainty', async ({ page }) => {
   await page.getByRole('button', { name: 'Renal', exact: true }).click();
   await expect(page.locator('.anatomy-system-heading h1')).toHaveText('Renal');
   await expect(page.locator('.anatomy-metrics')).toContainText('Medición caducada');
-  await page.locator('.anatomy-metrics').getByRole('button', { name: /Calcio urinario/ }).click();
+  await page
+    .locator('.anatomy-metrics')
+    .getByRole('button', { name: /Calcio urinario/ })
+    .click();
   await expect(page.getByRole('dialog')).toContainText('Incertidumbre');
   await expect(page.getByRole('dialog')).toContainText('Sintética');
 });
@@ -91,7 +100,9 @@ test('CSV preview, commit and duplicate detection use the current subject', asyn
   await page.getByRole('button', { name: 'Validar y previsualizar' }).click();
   await expect(page.getByRole('dialog').getByRole('status')).toContainText('1 nuevas mediciones');
   await page.getByRole('button', { name: 'Guardar en SQLite' }).click();
-  await expect(page.getByRole('dialog').getByRole('status')).toContainText('Guardadas 1 mediciones');
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText(
+    'Guardadas 1 mediciones',
+  );
   await page
     .getByRole('dialog')
     .getByRole('button', { name: 'Cerrar', exact: true })
@@ -103,7 +114,9 @@ test('CSV preview, commit and duplicate detection use the current subject', asyn
   await page.getByRole('button', { name: 'Importar datos', exact: true }).click();
   await page.getByLabel('Archivo de mediciones').setInputFiles(file);
   await page.getByRole('button', { name: 'Validar y previsualizar' }).click();
-  await expect(page.getByRole('dialog').getByRole('status')).toContainText('1 duplicados existentes');
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText(
+    '1 duplicados existentes',
+  );
 });
 
 test('GLB, fonts and decoding work while all external destinations are blocked', async ({
@@ -162,12 +175,18 @@ test('failing sites are marked on the body and the sensing ladder explains the n
   await expect(markers.locator('[data-placed="true"]').first()).toBeVisible();
   await markers.getByRole('button', { name: /Resorción ósea/ }).click();
   await expect(page.locator('.anatomy-system-heading h1')).toHaveText('Óseo');
+  await expect(page.locator('.anatomy-stage .system-media')).toHaveAttribute(
+    'data-system',
+    'skeleton',
+  );
   await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-camera-mode', 'skeleton');
+  await expect(page.locator('.anatomy-marker')).toHaveCount(0);
   const route = page.getByRole('region', { name: 'Ruta Resorción ósea' });
   await expect(route).toContainText('Ruta demostrativa');
   await expect(route).toContainText('Desviada');
   await expect(route).toContainText('Pendiente de revisión médica');
   await expect(page.locator('.anatomy-metrics')).toContainText('Capa 2 · Bajo demanda');
+  await page.getByRole('button', { name: 'Vista general', exact: true }).click();
   const subject = page.getByLabel('Seleccionar astronauta', { exact: true });
   await subject.selectOption('crew-01');
   await expect(page.locator('.anatomy-overall-status')).toHaveText('Sin desviaciones detectadas');
