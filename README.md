@@ -28,6 +28,12 @@ La siguiente fase puede sustituir los datos sintéticos por ingestión verificab
 - NASA, [Food & Nutrition](https://www.nasa.gov/reference/jsc-food-nutrition/): análisis de sangre y orina para marcadores fisiológicos y evaluación detallada de ingesta.
 - El reto de NASA Space Apps 2026 y AstroBone se consultaron como contexto de problema y ejemplo de alcance. Esta interfaz usa estructura, textos y visuales propios.
 
+## Documentación de la IA
+
+La explicación del concepto de IA del proyecto, su arquitectura y su evolución está en [docs/ia-documentacion.md](docs/ia-documentacion.md).
+
+Además, el módulo de entrenamiento fisiológico ya está incluido en [body_ai_module.py](body_ai_module.py). Este módulo aprende a partir de datos como sexo, peso, cintura, cadera, masa muscular y porcentaje de grasa para generar un perfil visual del cuerpo. La capa de datos actual está en [data/body_profile_dataset.csv](data/body_profile_dataset.csv), con un esquema realista y reutilizable para datasets antropométricos.
+
 ## Archivos
 
 - `index.html` — interfaz y estructura del panel.
