@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NASA Explorer</title>
+    <meta
+      name="description"
+      content="Landing page inspirada en la exploración espacial y la ciencia NASA."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="stars"></div>
+
+    <header class="topbar">
+      <div class="logo-wrap">
+        <span class="logo-mark">N</span>
+        <span>NASA Explorer</span>
+      </div>
+      <nav class="nav">
+        <a href="#missions">Misiones</a>
+        <a href="#discoveries">Descubrimientos</a>
+        <a href="#about">Sobre</a>
+      </nav>
+      <button class="nav-button">Explorar ahora</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Exploración del cosmos</p>
+          <h1>Más allá del planeta, hacia el futuro.</h1>
+          <p class="subtitle">
+            Descubre misiones, datos científicos y la próxima frontera del conocimiento
+            humano en el universo.
+          </p>
+          <div class="cta-row">
+            <a href="#missions" class="primary">Ver misiones</a>
+            <a href="#about" class="secondary">Conocer más</a>
+          </div>
+          <ul class="stats">
+            <li><strong>60+</strong><span>misiones</span></li>
+            <li><strong>12</strong><span>satélites</span></li>
+            <li><strong>3.5M</strong><span>km</span></li>
+          </ul>
+        </div>
+
+        <div class="planet-card">
+          <div class="planet-glow"></div>
+          <div class="planet"></div>
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="signal signal-one"></div>
+          <div class="signal signal-two"></div>
+        </div>
+      </section>
+
+      <section id="missions" class="missions">
+        <div class="section-heading">
+          <p class="eyebrow">Misiones destacadas</p>
+          <h2>Curiosidad que inspira descubrimientos.</h2>
+        </div>
+
+        <div class="card-grid">
+          <article class="mission-card">
+            <span class="badge">Luna</span>
+            <h3>Artemis</h3>
+            <p>Regresa a la Luna con tecnología avanzada para preparar futuras misiones.</p>
+          </article>
+
+          <article class="mission-card">
+            <span class="badge">Marte</span>
+            <h3>Perseverance</h3>
+            <p>Explora el planeta rojo y recopila datos clave para comprender su historia.</p>
+          </article>
+
+          <article class="mission-card">
+            <span class="badge">Sistema Solar</span>
+            <h3>Europa Clipper</h3>
+            <p>Estudia océanos ocultos bajo la superficie de Europa y su potencial habitabilidad.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="discoveries" class="discoveries">
+        <div class="panel">
+          <div>
+            <p class="eyebrow">Último hallazgo</p>
+            <h2>El universo sigue revelando secretos.</h2>
+          </div>
+          <p>
+            Las observaciones actuales muestran nuevas pistas sobre agua, clima planetario y
+            formación de sistemas solares, acercándonos cada vez más a entender nuestro lugar
+            en el cosmos.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer id="about" class="footer">
+      <p>© <span id="year"></span> NASA Explorer</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
