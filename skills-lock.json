@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "skills": {
+    "cutaway": {
+      "source": "Nyxera0x/cutaway",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "a0a3ce766e4082fa569eb32d430dc5da1aa0b73097750a054d7cfb0a6ec413e7"
+    }
+  }
+}
