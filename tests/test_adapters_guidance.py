@@ -26,3 +26,13 @@ def test_real_plugin_loading_and_calibration_gate(monkeypatch):
 def test_reviewed_protocol_requires_reviewer_and_reference():
     with pytest.raises(ValidationError):
         GuidanceProtocol(id='unsafe',trigger='emergency',explanation='x',suggested_check='x',how_to_measure='x',reference='',authorization_level='medical',validation_status='reviewed')
+
+
+def test_probability_cannot_be_hidden_in_anomaly_output(monkeypatch):
+    class Mislabeled(MockModelAdapter):
+        def predict(self,a):
+            return super().predict(a).model_copy(update={'prediction_kind':'anomaly_score','prediction':{'disease_probability':.7}})
+    module=types.ModuleType('aegis_mislabeled');module.create_adapter=lambda:Mislabeled()
+    monkeypatch.setitem(sys.modules,'aegis_mislabeled',module)
+    with pytest.raises(ValueError,match='contrato validado'):
+        LocalModelAdapter('aegis_mislabeled').load().predict([])

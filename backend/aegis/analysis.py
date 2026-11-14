@@ -4,6 +4,7 @@ Three standard deviations is an explicit research visualization heuristic.
 It is not a safety limit, clinical cut-off or disease probability.
 """
 from datetime import datetime
+import math
 import numpy as np
 from scipy import stats
 from .schemas import BiomarkerDefinition, Measurement, PersonalBaseline, StatisticalAnalysis
@@ -14,9 +15,16 @@ REVIEW_Z = 3.0
 
 def analyze(definition: BiomarkerDefinition, observations: list[Measurement], baseline: PersonalBaseline | None,
             now: datetime, *, independent_normal_samples: bool = False) -> StatisticalAnalysis:
-    rows = sorted((x for x in observations if x.metric_id == definition.id and x.timestamp <= now), key=lambda x: x.timestamp)
+    rows = sorted((x for x in observations if x.metric_id == definition.id and x.timestamp <= now),
+                  key=lambda x: (x.timestamp, not x.is_synthetic))
     result = StatisticalAnalysis(metric_id=definition.id)
     if not rows:
+        return result
+    if len({x.astronaut_id for x in rows}) > 1:
+        raise ValueError('El análisis no puede combinar astronautas distintos.')
+    if any(x.unit != definition.unit for x in rows):
+        result.data_state = 'poor_quality'
+        result.quality_flags.append('Las unidades históricas no coinciden con el registro actual; se requiere una migración explícita.')
         return result
     latest = rows[-1]
     # The latest acquisition's provenance selects the cohort. Never pool real and synthetic values.
@@ -36,13 +44,22 @@ def analyze(definition: BiomarkerDefinition, observations: list[Measurement], ba
         result.quality_flags.append('Sin baseline previo compatible con el origen y la unidad.')
     if good:
         values = np.array([x.value for x in good], dtype=float)
-        result.mean = float(values.mean())
-        result.std = float(values.std(ddof=1)) if len(values) >= 2 else None
-        result.median = float(np.median(values))
-        result.mad = float(np.median(np.abs(values - np.median(values))))
+        with np.errstate(over='ignore', invalid='ignore'):
+            descriptives = [float(values.mean()), float(np.median(values)),
+                            float(np.median(np.abs(values - np.median(values))))]
+            std = float(values.std(ddof=1)) if len(values) >= 2 else None
+        if not all(math.isfinite(v) for v in descriptives + ([std] if std is not None else [])):
+            result.data_state = 'poor_quality'
+            result.quality_flags.append('Magnitud fuera del rango de cálculo numérico; revisar valores y unidades.')
+            return result
+        result.mean, result.median, result.mad = descriptives
+        result.std = std
         days = np.array([(x.timestamp - good[0].timestamp).total_seconds() / 86400 for x in good])
         if len(values) >= 3 and len(np.unique(days)) >= 3:
-            result.trend_per_day = float(stats.linregress(days, values).slope)
+            with np.errstate(over='ignore', invalid='ignore'):
+                slope = float(stats.linregress(days, values).slope)
+            if math.isfinite(slope):
+                result.trend_per_day = slope
         # Time-series independence is NOT assumed or inferred from a normality p-value.
         if independent_normal_samples and len(values) >= MIN_BASELINE_N:
             radius = stats.t.ppf(.975, len(values)-1) * stats.sem(values)
@@ -66,5 +83,9 @@ def analyze(definition: BiomarkerDefinition, observations: list[Measurement], ba
         result.quality_flags.append('Baseline constante: no se puede estandarizar una desviación.')
         return result
     result.deviation_z = (latest.value - result.baseline.mean) / result.baseline.std
+    if not math.isfinite(result.deviation_z):
+        result.deviation_z = None
+        result.quality_flags.append('Desviación fuera del rango de cálculo numérico.')
+        return result
     result.status = 'review' if abs(result.deviation_z) >= REVIEW_Z else 'stable'
     return result

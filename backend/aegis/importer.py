@@ -2,7 +2,6 @@
 import csv
 import io
 import json
-from datetime import timedelta
 import pandas as pd
 from pydantic import Field, ValidationError
 from .schemas import Contract, Measurement

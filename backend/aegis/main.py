@@ -5,7 +5,7 @@ import io
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import Field, field_validator
+from pydantic import field_validator
 from . import store
 from .adapters import load_adapter
 from .analysis import analyze
@@ -133,11 +133,11 @@ def symptom(subject_id: str, event: SymptomEvent):
 
 
 @app.get('/api/astronauts/{subject_id}/export')
-def export(subject_id: str, format: str = Query('json', pattern='^(json|csv)$')):
-    snapshot = dashboard(subject_id)
+def export(subject_id: str, format: str = Query('json', pattern='^(json|csv)$'), as_of: datetime | None = None):
+    snapshot = dashboard(subject_id, as_of)
     if format == 'json':
         return snapshot
-    rows = store.measurements(subject_id, datetime.now(timezone.utc))
+    rows = store.measurements(subject_id, snapshot['as_of'])
     output = io.StringIO()
     fields = ['astronaut_id', 'metric_id', 'value', 'unit', 'timestamp', 'measurement_method', 'source', 'quality', 'is_synthetic']
     writer = csv.DictWriter(output, fieldnames=fields)

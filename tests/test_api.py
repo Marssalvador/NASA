@@ -104,3 +104,11 @@ def test_exports_preserve_provenance(client):
     text=client.get('/api/astronauts/crew-01/export?format=csv').text
     assert 'is_synthetic' in text and 'astronaut_id' in text and 'measurement_method' in text
     assert client.get('/api/astronauts/crew-01/export').json()['prediction']['prediction_kind']=='anomaly_score'
+
+
+def test_export_respects_replay_time(client):
+    start=client.get('/api/astronauts/crew-01/dashboard').json()['demo_start']
+    result=client.get('/api/astronauts/crew-01/export',params={'as_of':start}).json()
+    assert all(a['n']==1 for a in result['analyses'])
+    csv=client.get('/api/astronauts/crew-01/export',params={'as_of':start,'format':'csv'}).text
+    assert len(csv.splitlines())==len(result['analyses'])+1

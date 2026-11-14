@@ -80,3 +80,24 @@ def test_timezone_required_and_normalized():
 def test_future_measurements_ignored():
     a = analyze(D, [measurement(100,timestamp=NOW+timedelta(days=1))], baseline(), NOW)
     assert a.n == 0 and a.latest is None
+
+
+def test_people_cannot_be_pooled_in_standalone_engine():
+    with pytest.raises(ValueError, match='astronautas distintos'):
+        analyze(D, observations()+[measurement(100,astronaut_id='other')], baseline(), NOW)
+
+
+def test_registry_unit_changes_require_data_migration():
+    a = analyze(D.model_copy(update={'unit':'Hz'}), observations(), baseline(), NOW)
+    assert a.status == 'insufficient_data' and a.data_state == 'poor_quality'
+
+
+def test_large_finite_values_cannot_overflow_into_normal_results():
+    a = analyze(D, [measurement(1e308) for _ in range(4)], baseline(), NOW)
+    assert a.status == 'insufficient_data' and a.mean is None
+
+
+def test_real_provenance_wins_timestamp_tie_deterministically():
+    a = analyze(D, [measurement(73,is_synthetic=False),measurement(70)], baseline(), NOW)
+    assert a.latest.is_synthetic is False and a.n == 1
+    assert a.baseline is None

@@ -1,5 +1,4 @@
 """SQLite repository; explicit transactions, no mixing subjects or demo provenance."""
-import json
 import os
 import sqlite3
 from contextlib import contextmanager
@@ -75,7 +74,7 @@ def save_measurements(items: list[Measurement], dry_run=False):
 def measurements(subject_id, as_of):
     with connection() as db:
         return [Measurement.model_validate_json(r[0]) for r in db.execute(
-            'SELECT payload FROM measurements WHERE astronaut_id=? AND timestamp<=? ORDER BY timestamp',
+            'SELECT payload FROM measurements WHERE astronaut_id=? AND timestamp<=? ORDER BY timestamp,is_synthetic DESC',
             (subject_id, as_of.isoformat()))]
 
 
