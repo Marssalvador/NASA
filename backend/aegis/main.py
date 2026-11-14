@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import csv
 import io
 from fastapi import FastAPI, HTTPException, Query
@@ -93,7 +93,7 @@ def dashboard(subject_id: str, as_of: datetime | None = None):
     return {'astronaut': subject, 'as_of': now, 'status': overall, 'analyses': analyses,
             'findings': findings, 'measurement_requests': requests, 'guidance': guidance,
             'prediction': prediction, 'model_error': model_error, 'events': events,
-            'demo_start': subject.mission_start, 'demo_end': subject.mission_start.replace() + __import__('datetime').timedelta(days=29)}
+            'demo_start': subject.mission_start, 'demo_end': subject.mission_start + timedelta(days=29)}
 
 
 @app.post('/api/import/preview')

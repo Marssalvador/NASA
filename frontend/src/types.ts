@@ -1,0 +1,10 @@
+export type Status = 'stable' | 'review' | 'emergency' | 'insufficient_data';
+export interface Astronaut {id:string; name:string; role:string; mission:string; scenario:string; mission_start:string; is_synthetic:boolean}
+export interface Biomarker {id:string; name:string; unit:string; body_system:string; body_region:string; sample_type:string; measurement_method:string; expected_frequency:number; reference_source:string; enabled:boolean}
+export interface Measurement {astronaut_id:string; metric_id:string; value:number|null; unit:string; timestamp:string; measurement_method:string; source:string; quality:string; is_synthetic:boolean}
+export interface Baseline {mean:number; std:number; n:number; start:string; end:string; source:string; is_synthetic:boolean}
+export interface Analysis {metric_id:string; status:Status; data_state:string; n:number; excluded:number; mean:number|null; std:number|null; median:number|null; mad:number|null; trend_per_day:number|null; baseline:Baseline|null; deviation_z:number|null; ci95:number[]|null; uncertainty:string; quality_flags:string[]; latest:Measurement|null; series:Measurement[]}
+export interface Finding {id:string; metric_id:string|null; status:Status; title:string; explanation:string}
+export interface Guidance {id:string; trigger:string; explanation:string; suggested_check:string; how_to_measure:string; reference:string; authorization_level:string; validation_status:string; reviewer:string|null}
+export interface Prediction {model_id:string; model_version:string; prediction:Record<string,unknown>; prediction_kind:string; uncertainty:number|null; input_quality:string; variables_used:string[]; missing_variables:string[]; explanation:string; validation_status:string; is_synthetic:boolean}
+export interface Dashboard {astronaut:Astronaut; as_of:string; status:Status; analyses:Analysis[]; findings:Finding[]; measurement_requests:{metric_id:string;reason:string;how_to_measure:string}[]; guidance:Guidance[]; prediction:Prediction|null; model_error:string|null; events:{symptom:string;is_synthetic:number}[]; demo_start:string; demo_end:string}

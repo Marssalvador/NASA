@@ -60,10 +60,17 @@ class LocalModelAdapter(ModelAdapter):
 
     def predict(self, analyses):
         self.validate_input(analyses)
-        result = Prediction.model_validate(self.delegate.predict(analyses))
+        raw = self.delegate.predict(analyses)
+        result = Prediction.model_validate(raw.model_dump() if isinstance(raw, Prediction) else raw)
         metadata = self.get_metadata()
+        def contains_probability(value):
+            if isinstance(value, dict):
+                return any('probab' in str(k).lower() or contains_probability(v) for k,v in value.items())
+            return isinstance(value, list) and any(contains_probability(v) for v in value)
+        if result.prediction_kind != 'validated_disease_probability' and contains_probability(result.prediction):
+            raise ValueError('Una probabilidad clínica requiere un contrato validado y calibrado.')
         if result.prediction_kind == 'validated_disease_probability':
-            if not (metadata.get('validated') and metadata.get('calibrated') and metadata.get('validation_reference') and result.validation_status == 'validated'):
+            if not (metadata.get('validated') is True and metadata.get('calibrated') is True and metadata.get('validation_reference') and result.validation_status == 'validated' and not result.is_synthetic):
                 raise ValueError('Probabilidad clínica bloqueada: falta calibración, validación o referencia.')
             probability = result.prediction.get('probability')
             if not isinstance(probability, (int, float)) or isinstance(probability, bool) or not 0 <= probability <= 1:

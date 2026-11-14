@@ -30,7 +30,7 @@ def analyze(definition: BiomarkerDefinition, observations: list[Measurement], ba
         result.quality_flags.append('Observaciones ausentes o de calidad no aceptada excluidas.')
     if len(cohort) != len(rows):
         result.quality_flags.append('Datos reales y sintéticos separados; se usa el origen de la última adquisición.')
-    if baseline and baseline.is_synthetic == latest.is_synthetic and baseline.unit == definition.unit and baseline.end < cohort[0].timestamp:
+    if baseline and baseline.astronaut_id == latest.astronaut_id and baseline.metric_id == definition.id and baseline.is_synthetic == latest.is_synthetic and baseline.unit == definition.unit and baseline.end < cohort[0].timestamp:
         result.baseline = baseline
     else:
         result.quality_flags.append('Sin baseline previo compatible con el origen y la unidad.')

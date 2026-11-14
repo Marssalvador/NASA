@@ -25,6 +25,7 @@ class Astronaut(Contract):
     scenario: Literal['stable', 'review', 'emergency']
     is_synthetic: bool = True
     mission_start: datetime
+    _start_utc = field_validator('mission_start')(utc)
 
 
 class BiomarkerDefinition(Contract):

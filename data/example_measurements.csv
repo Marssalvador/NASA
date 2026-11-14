@@ -1,0 +1,4 @@
+astronaut_id,timestamp,metric_id,value,unit,quality,is_synthetic
+crew-01,2026-11-14T10:00:00Z,heart_rate,70,bpm,good,true
+crew-01,2026-11-14T10:05:00Z,heart_rate,71,bpm,good,true
+crew-01,2026-11-14T10:10:00Z,heart_rate,69,bpm,good,true
