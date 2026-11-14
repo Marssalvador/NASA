@@ -1,114 +1,68 @@
-const partData = {
-  piernas: {
-    name: 'Piernas',
-    deficit: '-9.4%',
-    risk: 'Sarcopenia moderada',
-    summary:
-      'La masa muscular de las piernas muestra una tendencia de desuso acumulado. El sistema recomienda ejercicios de resistencia y un plan nutricional orientado a síntesis proteica.',
-    exercises: [
-      'Sentadillas con banda de resistencia',
-      'Step-ups de 3 series x 12 repeticiones',
-      'Entrenamiento de explosividad en isquios'
-    ],
-    supplements: ['Leucina', 'Whey aislado', 'Vitamina D3', 'Magnesio'],
-    diet: [
-      '1.8–2.2 g/kg de proteína',
-      'Carbohidratos 4–5 g/kg',
-      'Electrolitos cada 6 h',
-      'Reposición de sueño 8.5 h'
-    ]
-  },
-  brazos: {
-    name: 'Brazos',
-    deficit: '-5.1%',
-    risk: 'Pérdida de fuerza funcional',
-    summary:
-      'La fuerza de brazos presenta una caída progresiva, con mayor fatiga durante las maniobras de carga y mantenimiento en microgravedad.',
-    exercises: [
-      'Curl con banda',
-      'Press de triceps isotónico',
-      'Pull-down asistido con brazos'
-    ],
-    supplements: ['Creatina', 'BCAA', 'Vitamina B6', 'Zinc'],
-    diet: [
-      'Proteína distribuida en 4 tomas',
-      'Omega-3 2 g/día',
-      'Sodio ajustado por sudoración',
-      'Hidratación controlada'
-    ]
-  },
-  core: {
-    name: 'Core',
-    deficit: '-6.8%',
-    risk: 'Estabilidad reducida',
-    summary:
-      'La estabilidad central está comprometida, reduciendo el control postural y la eficiencia para realizar maniobras de precisión.',
-    exercises: [
-      'Plancha de resistencia',
-      'Levantamiento de piernas en suspensión',
-      'Torque con resistencia de banda'
-    ],
-    supplements: ['Magnesio', 'Kre-alkalyn', 'Vitamina C', 'Probioticos'],
-    diet: [
-      'Fibra 25–30 g/día',
-      'Proteína 1.7 g/kg',
-      'Potasio + 300 mg',
-      'Descanso activo diario'
-    ]
-  },
-  espalda: {
-    name: 'Espalda',
-    deficit: '-4.7%',
-    risk: 'Fatiga lumbar',
-    summary:
-      'La espalda muestra signos de fatiga acumulada y pérdida de estabilidad, especialmente durante tareas repetitivas de carga o manipulación.',
-    exercises: [
-      'Peso muerto asistido',
-      'Rangos de movilidad dorsal',
-      'Extensión isométrica de espalda'
-    ],
-    supplements: ['Calcio', 'Vitamina D', 'Collagen peptides', 'Magnesio'],
-    diet: [
-      'Hidratación en 2–3 bloques',
-      'Proteína distribuida',
-      'Aminoácidos esenciales',
-      'Dormir 8 h mínimo'
-    ]
-  }
-};
-
-function renderPart(partKey) {
-  const entry = partData[partKey];
-  const partName = document.getElementById('part-name');
-  const partDeficit = document.getElementById('part-deficit');
-  const partSummary = document.getElementById('part-summary');
-  const partRisk = document.getElementById('part-risk');
-  const partExercises = document.getElementById('part-exercises');
-  const partSupplements = document.getElementById('part-supplements');
-  const partDiet = document.getElementById('part-diet');
-
-  if (!entry) return;
-
-  partName.textContent = entry.name;
-  partDeficit.textContent = entry.deficit;
-  partSummary.textContent = entry.summary;
-  partRisk.textContent = entry.risk;
-
-  partExercises.innerHTML = entry.exercises.map((item) => `<li>${item}</li>`).join('');
-  partSupplements.innerHTML = entry.supplements.map((item) => `<li>${item}</li>`).join('');
-  partDiet.innerHTML = entry.diet.map((item) => `<li>${item}</li>`).join('');
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  const bodyParts = document.querySelectorAll('.body-part');
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  const announce = (message) => {
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+  };
 
-  bodyParts.forEach((part) => {
-    part.addEventListener('click', () => {
-      bodyParts.forEach((item) => item.classList.remove('is-active'));
-      part.classList.add('is-active');
-      renderPart(part.dataset.part);
+  document.getElementById('dismiss-demo')?.addEventListener('click', () => {
+    document.querySelector('.demo-banner')?.remove();
+  });
+
+  document.getElementById('checkin')?.addEventListener('click', () => {
+    announce('Registro de medición: conecta un sensor o introduce datos verificados para continuar.');
+  });
+
+  document.getElementById('view-plan')?.addEventListener('click', () => {
+    announce('Plan de demostración. La carga y la técnica deben seguir el protocolo de misión.');
+  });
+
+  const bodyFront = document.getElementById('body-front');
+  const bodyBack = document.getElementById('body-back');
+  document.querySelectorAll('[data-view]').forEach((button) => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('[data-view]').forEach((item) => item.classList.toggle('selected', item === button));
+      const isBack = button.dataset.view === 'back';
+      bodyFront.hidden = isBack;
+      bodyBack.hidden = !isBack;
+      document.querySelector('.body-svg')?.setAttribute('aria-label', `Modelo corporal interactivo, vista ${isBack ? 'posterior' : 'frontal'}`);
     });
   });
 
-  renderPart('piernas');
+  const regionDetails = {
+    thighs: { title: 'Cuádriceps', value: '−3.1%', status: 'cambio vs. línea base', copy: 'Espesor por ecografía: 18.4 mm · última lectura hace 2 días.' },
+    calves: { title: 'Pantorrillas', value: '+0.8%', status: 'cambio vs. línea base', copy: 'Fuerza funcional estable · ecografía pendiente de próxima sesión.' },
+    arms: { title: 'Brazos', value: '—', status: 'sin medición reciente', copy: 'Añade una medición de fuerza o ecografía para ver su evolución.' }
+  };
+  const popover = document.getElementById('region-popover');
+  const openRegion = (region) => {
+    const details = regionDetails[region];
+    if (!details || !popover) return;
+    document.getElementById('region-title').textContent = details.title;
+    document.getElementById('region-value').textContent = details.value;
+    document.getElementById('region-status').textContent = details.status;
+    document.getElementById('region-copy').textContent = details.copy;
+    popover.classList.add('open');
+  };
+  document.querySelectorAll('.muscle[data-region]').forEach((region) => {
+    region.addEventListener('click', () => openRegion(region.dataset.region));
+    region.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openRegion(region.dataset.region);
+      }
+    });
+  });
+  document.querySelector('.popover-close')?.addEventListener('click', () => popover?.classList.remove('open'));
+  document.getElementById('region-plan')?.addEventListener('click', () => announce('Ejercicio de ejemplo: consulta el plan y confirma la carga con el equipo médico.'));
+
+  const cycleToggle = document.getElementById('cycle-toggle');
+  cycleToggle?.addEventListener('click', () => {
+    const enabled = cycleToggle.getAttribute('aria-checked') !== 'true';
+    cycleToggle.setAttribute('aria-checked', String(enabled));
+    document.getElementById('cycle-detail').hidden = !enabled;
+  });
 });
