@@ -1,0 +1,52 @@
+{
+  "checked_at_utc": "2026-11-14T17:54:33.773Z",
+  "url": "http://127.0.0.1:8000",
+  "storage": "local",
+  "engine": "aegis-rules 0.1.0",
+  "synthetic": true,
+  "basal": {
+    "day": 22,
+    "measurements": 712
+  },
+  "pattern": {
+    "day": 24,
+    "measurements": 740,
+    "certainty": "suspicion"
+  },
+  "result": {
+    "measurement_id": 2405,
+    "reevaluation_id": "55fe6df4-209e-4429-86ea-82d90b01e035",
+    "previous_id": "0257c939-817f-4e9e-8a74-8192371e2d8a",
+    "certainty": "confirmed_finding"
+  },
+  "reference_unchanged": true,
+  "reset_preserves_old_run": true,
+  "page_errors": [],
+  "requests": [
+    {
+      "path": "/api/v2/demo/sessions",
+      "status": 200
+    },
+    {
+      "path": "/api/v2/demo/sessions/45949fad-3106-483f-a6a7-ec70ff4e397a/step",
+      "status": 200
+    },
+    {
+      "path": "/api/v2/demo/sessions/45949fad-3106-483f-a6a7-ec70ff4e397a",
+      "status": 200
+    },
+    {
+      "path": "/api/v2/demo/sessions/45949fad-3106-483f-a6a7-ec70ff4e397a/step",
+      "status": 200
+    },
+    {
+      "path": "/api/v2/demo/sessions/45949fad-3106-483f-a6a7-ec70ff4e397a/tests/791599d1-a3b4-4ae2-91d6-b8d2861fec87/result",
+      "status": 200
+    },
+    {
+      "path": "/api/v2/demo/sessions",
+      "status": 200
+    }
+  ],
+  "status": "passed"
+}

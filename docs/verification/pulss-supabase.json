@@ -1,0 +1,33 @@
+{
+  "checked_at_utc": "2026-11-14T17:52:14.130016+00:00",
+  "project_ref": "hudkkzrkwdbgoltrtlqu",
+  "transport": "Real /api/v2 router with PostgreSQL",
+  "steps": [
+    {
+      "operation": "basal",
+      "revision": 0,
+      "measurements": 712
+    },
+    {
+      "operation": "step",
+      "revision": 1,
+      "measurements": 726
+    },
+    {
+      "operation": "step",
+      "revision": 2,
+      "measurements": 740
+    },
+    {
+      "operation": "result_and_reevaluation",
+      "measurement_id": 2351,
+      "assessment_id": "1e2f5248-070d-471e-a3f0-b20aba167724",
+      "previous_id": "fdc438ef-2074-407a-a683-c053a036db21",
+      "certainty": "confirmed_finding"
+    }
+  ],
+  "code": "P-000",
+  "session_id": "fec76680-0fef-4369-84c0-43d8e7088fda",
+  "original_a112_measurements": 796,
+  "status": "passed"
+}

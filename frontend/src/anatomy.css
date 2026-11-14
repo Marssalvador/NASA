@@ -18,6 +18,252 @@
   font-size: 14px;
   overflow: hidden;
 }
+
+/* Presentation controls and findings: retain the existing anatomy composition. */
+.demo-controls {
+  position: absolute;
+  left: 40px;
+  bottom: 65px;
+  z-index: 5;
+  width: 240px;
+  padding: 14px 0 0;
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+}
+.synthetic-badge {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--secondary);
+  border: 1px solid var(--line);
+  padding: 6px 9px;
+  border-radius: 20px;
+}
+@media (max-width: 600px) {
+  .anatomy-app .anatomy-identity {
+    gap: 10px;
+  }
+  .anatomy-app .anatomy-astronaut label {
+    display: none;
+  }
+  .synthetic-badge {
+    font-size: 8px;
+    padding: 5px 7px;
+  }
+}
+.anatomy-app[data-theme='dark'] .demo-actions button:not(.demo-primary),
+.anatomy-app[data-theme='dark'] .medical-reevaluation {
+  background: var(--glass);
+}
+.demo-clock {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 13px;
+}
+.demo-clock strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+.demo-clock span {
+  font-size: 10px;
+  color: var(--secondary);
+}
+.demo-actions {
+  display: grid;
+  gap: 7px;
+}
+.demo-actions button {
+  min-height: 33px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.demo-actions .demo-primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.demo-controls button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.demo-controls p,
+.demo-controls > small {
+  display: block;
+  font-size: 9px;
+  line-height: 1.6;
+  color: var(--secondary);
+  margin-top: 8px;
+}
+.demo-controls b {
+  font-weight: 600;
+}
+.demo-error {
+  font-size: 11px;
+  color: var(--alert);
+  padding-top: 8px;
+}
+.demo-error button {
+  text-decoration: underline;
+  margin-left: 8px;
+}
+.medical-reference {
+  display: block;
+  color: var(--secondary);
+  font-size: 10px;
+  margin-top: 5px;
+  font-weight: 400;
+}
+.medical-findings {
+  margin-top: 25px;
+}
+.medical-findings > h2,
+.medical-tests h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  margin: 20px 0 13px;
+  font-weight: 500;
+}
+.medical-finding {
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+}
+.medical-finding h3 {
+  font-size: 15px;
+  margin: 7px 0 10px;
+  font-weight: 500;
+}
+.medical-finding p,
+.medical-empty {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--secondary);
+}
+.medical-certainty {
+  font-size: 10px;
+  color: var(--secondary);
+}
+.level-yellow .medical-certainty,
+.level-orange .medical-certainty,
+.level-red .medical-certainty {
+  color: var(--alert);
+}
+.medical-finding small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--secondary);
+  margin: 9px 0;
+}
+.medical-finding details {
+  margin-top: 12px;
+}
+.medical-finding summary {
+  font-size: 11px;
+  cursor: pointer;
+}
+.medical-evidence-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 0;
+}
+.medical-evidence-links button {
+  font-size: 10px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+.medical-reevaluation {
+  margin: 12px 0;
+  padding: 9px 12px;
+  border-left: 2px solid var(--alert);
+  background: var(--panel);
+  overflow-wrap: anywhere;
+}
+.medical-test {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-top: 1px solid var(--line);
+}
+.medical-test strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+}
+.medical-test span {
+  display: block;
+  font-size: 10px;
+  color: var(--secondary);
+  margin-top: 7px;
+}
+.medical-test > button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 8px 10px;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.medical-input {
+  display: grid;
+  gap: 17px;
+  margin-top: 20px;
+}
+.medical-input label {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+}
+.medical-input input,
+.medical-input select {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--line, #bfb8af);
+  border-radius: 8px;
+  background: #fff;
+  color: #262321;
+}
+@media (min-width: 901px) {
+  .anatomy-navigation .anatomy-mission-context {
+    display: none;
+  }
+  .anatomy-system-buttons {
+    margin-top: clamp(70px, 9vh, 110px);
+  }
+}
+@media (max-width: 900px) {
+  .demo-controls {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: auto;
+    margin: 0 24px 30px;
+    padding: 15px 0;
+  }
+  .demo-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+  .demo-actions button:last-child {
+    grid-column: 1 / -1;
+  }
+  .anatomy-tagline {
+    display: none;
+  }
+}
 .anatomy-app button,
 .anatomy-app input,
 .anatomy-app select {
@@ -2722,7 +2968,9 @@ button.sensing-chip:hover {
   color: #6e655d;
   background: #fff8;
   box-shadow: inset 0 0 0 1px #ddd3c9;
-  transition: background 150ms ease, color 150ms ease;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
 }
 .anatomy-theme-toggle:hover {
   color: #2b241f;

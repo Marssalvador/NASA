@@ -86,8 +86,10 @@ export default function TrendPanel({
               tickFormatter={(v) => fmt(v)}
             />
             <Tooltip
-              labelFormatter={(t) => dateTime(new Date(Number(t)).toISOString())}
-              formatter={(v) => [`${fmt(Number(v), 2)} ${definition?.unit}`, 'Medición']}
+              labelFormatter={(t) =>
+                new Date(Number(t)).toLocaleDateString('es-ES', { timeZone: 'UTC' })
+              }
+              formatter={(v) => [`${fmt(Number(v), 2)} ${definition?.unit}`, 'Mediana diaria UTC']}
               contentStyle={{
                 background: '#fffdfa',
                 border: '1px solid #ded7cf',
@@ -112,8 +114,8 @@ export default function TrendPanel({
         </ResponsiveContainer>
       </div>
       <p className="anatomy-trend-footnote">
-        Línea discontinua: baseline personal. Sin intervalos estimados: los supuestos de la serie no
-        están verificados.
+        Puntos: mediana diaria UTC calculada por el motor. Línea discontinua: referencia personal.
+        Sin intervalos estimados: los supuestos de la serie no están verificados.
       </p>
       <button className="anatomy-outline-button" onClick={onDetail}>
         Ver estadística e incertidumbre <ArrowUpRight size={14} />

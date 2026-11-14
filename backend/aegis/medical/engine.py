@@ -13,6 +13,7 @@ Certainty vocabulary: observation < suspicion < confirmed_finding. A clinical di
 only by a professional (assessment_feedback), never by this engine.
 """
 from datetime import datetime, timedelta, timezone
+from dataclasses import asdict
 import hashlib
 import json
 import uuid
@@ -130,6 +131,7 @@ class Engine:
             'cycle_phase': model_input.context['cycle_phase'],
             'model_error': model_error,
             'emergencies': emergencies, 'data_states': states, 'persistent_shifts': shifts, 'anomalies': found,
+            'features': [asdict(f) for f in feature_rows],
             'protocol_matches': [{'id': m['protocol']['id'], 'level': m['level'],
                                   'level_source': m['protocol']['level_source'],
                                   'explanations': m['outcome'].explanations,
@@ -239,7 +241,9 @@ class Engine:
 
     def _explain(self, risk, level, certainty, deviating, matched, confirmations, missing) -> str:
         names = lambda ids: ', '.join(self.knowledge.biomarkers[b]['name'] for b in ids)
-        parts = [f'{risk["name"]}: nivel {level}, {certainty.replace("_", " ")}.']
+        level_name = {'green': 'verde', 'yellow': 'amarillo', 'orange': 'naranja', 'red': 'rojo', 'insufficient_data': 'datos insuficientes'}[level]
+        certainty_name = {'observation': 'observación', 'suspicion': 'sospecha', 'confirmed_finding': 'hallazgo confirmado'}[certainty]
+        parts = [f'{risk["name"]}: nivel {level_name}, {certainty_name}.']
         if deviating:
             parts.append(f'Señales desviadas respecto al patrón personal: {names(deviating)}.')
         for m in matched:
@@ -275,4 +279,4 @@ class Engine:
         request.reevaluation_assessment_id = new['id']
         self.repo.update_request(request, actor)
         return {'request_id': request.id, 'measurement_id': measurement_id, 'reevaluation': new,
-                'previous_assessment_id': original.id}
+                'previous_assessment_id': original.id, 'evaluation': evaluation}

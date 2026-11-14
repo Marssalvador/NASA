@@ -28,13 +28,17 @@ import { anatomySystems, CAMERA_DURATION_MS, evaluationColor } from './anatomyCo
 import { buildMarkers, fmt, isDormant, shortName, statusText } from './lib';
 import SensingRoute from './SensingRoute';
 import type { Analysis } from './types';
-import useMission from './useMission';
+import useMission from './usePresentation';
 import SystemIcon from './SystemIcon';
 import MissionDialogs from './MissionDialogs';
 import type { DialogName } from './MissionDialogs';
 import type { LayersState } from './AnatomyViewer';
 import SystemMedia from './SystemMedia';
-import SystemAssessment from './SystemAssessment';
+import MedicalFindings from './MedicalFindings';
+import DemoControls from './DemoControls';
+import MedicalInput from './MedicalInput';
+import MedicalEvidence from './MedicalEvidence';
+import type { MedicalRequest } from './medicalTypes';
 import { prefetchSection, sectionMediaFor } from './sectionMedia';
 import type { Theme } from './sectionMedia';
 import './anatomy.css';
@@ -67,13 +71,15 @@ export default function AnatomyApp() {
     data,
     states,
     day,
-    setDay,
     playing,
     setPlaying,
     loading,
     error,
     refresh,
   } = mission;
+  const [manualOpen, setManualOpen] = useState(false);
+  const [testInput, setTestInput] = useState<MedicalRequest | undefined>();
+  const [evidenceId, setEvidenceId] = useState<number | null>(null);
   const [region, setRegion] = useState('heart'),
     [metric, setMetric] = useState('heart_rate'),
     [focused, setFocused] = useState(false);
@@ -96,21 +102,6 @@ export default function AnatomyApp() {
     definition = registry.find((d) => d.id === metric);
   const regionalStatus = states[region] ?? 'insufficient_data';
   const pathways = data?.pathways ?? [];
-  // Routes touching this system: its own first, then the ones currently asking for data.
-  const activeStage = (stage: string) => (stage === 'quiet' || stage === 'unmonitored' ? 1 : 0);
-  const routes = pathways
-    .filter(
-      (p) =>
-        p.body_region === region ||
-        [...p.triggers, ...p.confirmations.map((c) => c.metric_id)].some((id) =>
-          definitions.some((d) => d.id === id),
-        ),
-    )
-    .sort(
-      (a, b) =>
-        Number(b.body_region === region) - Number(a.body_region === region) ||
-        activeStage(a.stage) - activeStage(b.stage),
-    );
   const allMarkers = useMemo(
     () => (data ? buildMarkers(data.analyses, registry, data.pathways) : []),
     [data, registry],
@@ -154,20 +145,13 @@ export default function AnatomyApp() {
     setBack(false);
     setReset((r) => r + 1);
   }
-  const astronautCode =
-    subject === 'crew-01'
-      ? 'A-017'
-      : subject === 'crew-02'
-        ? 'A-034'
-        : subject === 'crew-03'
-          ? 'A-051'
-          : subject;
+  const astronautCode = 'A-112';
 
   function metricRow(a: Analysis) {
     const d = definitions.find((x) => x.id === a.metric_id)!;
     const dormant = isDormant(a, registry, pathways);
-    const requested = pathways.some((p) =>
-      p.confirmations.some((c) => c.metric_id === a.metric_id && c.state === 'requested'),
+    const requested = mission.snapshot?.requests.some(
+      (r) => r.biomarker_id === a.metric_id && r.status !== 'resulted',
     );
     const deviation =
       a.baseline && a.latest?.value != null && a.baseline.mean !== 0
@@ -197,10 +181,16 @@ export default function AnatomyApp() {
         </span>
         <span className="anatomy-metric-name">
           <span>{shortName(d)}</span>
+          {a.baseline && (
+            <small className="medical-reference">
+              Ref. personal: {fmt(a.baseline.mean, 2)} {d.unit}
+            </small>
+          )}
           {caption && <small className="anatomy-metric-caption">{caption}</small>}
         </span>
         <span className="anatomy-metric-reading">
-          {fmt(a.latest?.value, d.unit === 'ng/mL' ? 2 : 1)} <small>{d.unit}</small>
+          {fmt(a.data_state === 'available' ? a.latest?.value : null, d.unit === 'ng/mL' ? 2 : 1)}{' '}
+          <small>{d.unit}</small>
         </span>
         {deviation != null && a.status === 'review' ? (
           <span className="anatomy-deviation">
@@ -222,36 +212,18 @@ export default function AnatomyApp() {
     <div className={`anatomy-app ${focused ? 'is-focused' : ''}`} data-theme={theme}>
       <header className="anatomy-topbar">
         <div className="anatomy-identity">
-          <a href="/" className="anatomy-wordmark" aria-label="AEGIS inicio">
-            AEGIS
+          <a href="/" className="anatomy-wordmark" aria-label="PULSS inicio">
+            PULSS
           </a>
+          <span className="synthetic-badge">Datos sintéticos</span>
           <span className="anatomy-identity-divider" />
-          <span className="anatomy-tagline">Gemelo fisiológico de misión</span>
+          <span className="anatomy-tagline">Gemelo fisiológico de misión · Datos sintéticos</span>
         </div>
         <div className="anatomy-astronaut">
           <span>Astronauta</span>
           <label>
-            <select
-              aria-label="Seleccionar astronauta"
-              value={subject}
-              onChange={(e) => {
-                setSubject(e.target.value);
-                setDay(29);
-                setPlaying(false);
-              }}
-            >
-              {crew.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.id === 'crew-01'
-                    ? 'A-017'
-                    : c.id === 'crew-02'
-                      ? 'A-034'
-                      : c.id === 'crew-03'
-                        ? 'A-051'
-                        : c.id}{' '}
-                  · {c.name}
-                </option>
-              ))}
+            <select aria-label="Seleccionar astronauta" value={subject} disabled>
+              <option value={subject}>A-112 · Lena Ortiz</option>
             </select>
             <ChevronDown size={17} />
           </label>
@@ -425,68 +397,8 @@ export default function AnatomyApp() {
               : 'Datos sintéticos · Investigación'}
           </span>
         </div>
-        <div className="anatomy-replay">
-          <div>
-            <button
-              aria-label={playing ? 'Pausar reproducción' : 'Reproducir misión'}
-              onClick={() => {
-                if (day === 29) setDay(0);
-                setPlaying((p) => !p);
-              }}
-            >
-              {playing ? <Pause size={13} /> : <Play size={13} />}
-            </button>
-            <span>Día {String(day).padStart(2, '0')}</span>
-            <input
-              aria-label="Día de misión"
-              type="range"
-              min="0"
-              max="29"
-              value={day}
-              onChange={(e) => {
-                setPlaying(false);
-                setDay(Number(e.target.value));
-              }}
-            />
-            <button
-              aria-label="Volver al presente"
-              onClick={() => {
-                setDay(29);
-                setPlaying(false);
-                refresh();
-              }}
-            >
-              <RotateCcw size={13} />
-            </button>
-          </div>
-          <span>Secuencia temporal de misión</span>
-        </div>
-        <details className="anatomy-data-menu">
-          <summary>
-            <Database size={14} />
-            Datos de la misión
-            <ChevronDown size={13} />
-          </summary>
-          <div>
-            <button onClick={() => setModal('import')}>
-              <Upload size={14} />
-              Importar datos
-            </button>
-            <button onClick={() => void mission.download('json')}>
-              <ArrowDownToLine size={14} />
-              Exportar JSON
-            </button>
-            <button onClick={() => void mission.download('csv')}>
-              <ArrowDownToLine size={14} />
-              Exportar mediciones CSV
-            </button>
-            <button onClick={() => setModal('registry')}>
-              <Settings2 size={14} />
-              Registro de biomarcadores
-            </button>
-          </div>
-        </details>
       </aside>
+      <DemoControls mission={mission} onManual={() => setManualOpen(true)} />
       <aside
         className={`anatomy-inspector ${focused ? 'focused' : ''}`}
         aria-label={`Información de ${system.name}`}
@@ -509,7 +421,7 @@ export default function AnatomyApp() {
         {data?.status === 'emergency' && (
           <button className="anatomy-emergency" role="alert" onClick={() => setModal('protocols')}>
             <TriangleAlert size={19} />
-            <span>Emergencia por síntoma declarado</span>
+            <span>{mission.snapshot?.report.emergencies.map((e) => e.title).join(' · ')}</span>
             <ChevronRight size={17} />
           </button>
         )}
@@ -550,49 +462,12 @@ export default function AnatomyApp() {
                 <p className="anatomy-empty">No hay biomarcadores habilitados para este sistema.</p>
               )}
             </div>
-            {focused && (
-              <SystemAssessment
-                region={region}
-                status={regionalStatus}
-                analyses={analyses.filter((a) => !isDormant(a, registry, pathways))}
-                guidance={data?.guidance ?? []}
-              />
-            )}
-            {routes.length > 0 &&
-              (focused ? (
-                <div className="sensing-routes">
-                  {routes.map((r) => (
-                    <SensingRoute
-                      key={r.id}
-                      route={r}
-                      registry={registry}
-                      analyses={data?.analyses ?? []}
-                      guidance={data?.guidance ?? []}
-                      onMetric={(id) => {
-                        setMetric(id);
-                        setModal('detail');
-                      }}
-                      onProtocols={() => setModal('protocols')}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <button
-                  className="sensing-summary"
-                  onClick={() => {
-                    setFocused(true);
-                    setReset((r) => r + 1);
-                  }}
-                >
-                  <span>Sensado jerárquico</span>
-                  {routes.map((r) => (
-                    <strong key={r.id} className={`stage-${r.stage}`}>
-                      {r.name}
-                    </strong>
-                  ))}
-                  <ChevronRight size={15} />
-                </button>
-              ))}
+            <MedicalFindings
+              mission={mission}
+              region={region}
+              onTest={setTestInput}
+              onEvidence={setEvidenceId}
+            />
           </>
         )}
         {tab === 'trend' && (
@@ -646,12 +521,25 @@ export default function AnatomyApp() {
       <footer className="anatomy-footer">
         <span>
           <span className="anatomy-local-dot" />
-          Entorno local · Sin validación clínica
+          Datos sintéticos · Motor médico real · Sin validación clínica
         </span>
         <button onClick={() => setModal('credits')}>
           Z-Anatomy / BodyParts3D <CircleHelp size={12} />
         </button>
       </footer>
+      {(manualOpen || testInput) && (
+        <MedicalInput
+          mission={mission}
+          test={testInput}
+          onClose={() => {
+            setManualOpen(false);
+            setTestInput(undefined);
+          }}
+        />
+      )}
+      {evidenceId != null && (
+        <MedicalEvidence id={evidenceId} mission={mission} onClose={() => setEvidenceId(null)} />
+      )}
       <MissionDialogs
         modal={modal}
         onClose={() => setModal(null)}

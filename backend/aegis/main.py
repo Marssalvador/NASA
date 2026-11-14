@@ -16,6 +16,7 @@ from .importer import ImportSpec, prepare
 from .registry import ROOT, registry
 from . import sensing
 from .medical.api import router as medical_router
+from .medical.demo import router as demo_router
 from .schemas import Contract, Astronaut, PersonalBaseline, utc
 
 
@@ -30,6 +31,7 @@ async def lifespan(app):
 app = FastAPI(title='AEGIS local research API', version='0.1.0', lifespan=lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=3)
 app.include_router(medical_router)
+app.include_router(demo_router)
 
 
 def subject_or_404(subject_id):

@@ -1,7 +1,6 @@
 import Modal from './Modal';
-import ImportDialog from './ImportDialog';
-import AnalysisDetail from './AnalysisDetail';
-import type useMission from './useMission';
+import MedicalMetricDetail from './MedicalMetricDetail';
+import type useMission from './usePresentation';
 import type { Analysis, Biomarker } from './types';
 export type DialogName =
   'import' | 'registry' | 'protocols' | 'model' | 'detail' | 'credits' | null;
@@ -18,24 +17,11 @@ export default function MissionDialogs({
   current?: Analysis;
   definition?: Biomarker;
 }) {
-  const { crew, subject, registry, data, refresh, setDay } = mission;
-  if (modal === 'import')
-    return (
-      <ImportDialog
-        crew={crew}
-        subjectId={subject}
-        registry={registry}
-        onClose={onClose}
-        onImported={() => {
-          setDay(29);
-          refresh();
-        }}
-      />
-    );
+  const { registry, data, refresh } = mission;
   if (modal === 'detail')
     return (
       <Modal title={definition?.name ?? 'Análisis estadístico'} onClose={onClose}>
-        {current ? <AnalysisDetail a={current} d={definition} /> : <p>Sin análisis disponible.</p>}
+        <MedicalMetricDetail mission={mission} id={current?.metric_id} />
       </Modal>
     );
   if (modal === 'registry')
@@ -82,42 +68,27 @@ export default function MissionDialogs({
         </button>
       </Modal>
     );
-  if (modal === 'protocols' && data)
+  if (modal === 'protocols' && mission.snapshot)
     return (
-      <Modal title="Hallazgos y comprobaciones" wide onClose={onClose}>
-        {data.events.length > 0 && (
-          <div className="emergency-box">
-            Emergencia por síntoma declarado:{' '}
-            {data.events
-              .map((e) => `${e.symptom} (${e.is_synthetic ? 'sintético' : 'real'})`)
-              .join(', ')}
-            . Activar el protocolo aprobado de misión; esta demo no incluye un protocolo clínico
-            validado.
-          </div>
-        )}
-        <p className="muted">
-          Alertas estadísticas de investigación, independientes de diagnósticos. Las intervenciones
-          médicas requieren un protocolo local revisado.
-        </p>
-        {data.findings.length === 0 && (
-          <div className="success-box">
-            Sin hallazgos estadísticos en las observaciones disponibles.
-          </div>
-        )}
-        {data.findings.map((f, i) => (
-          <article className="protocol-card" key={f.id}>
-            <h3>{f.title}</h3>
-            <p>{f.explanation}</p>
-            <p>
-              {data.measurement_requests.find((r) => r.metric_id === f.metric_id)?.how_to_measure}
-            </p>
-            <p className="amber">{data.guidance[i]?.suggested_check}</p>
-            <div className="protocol-meta">
-              <span>Referencia: {data.guidance[i]?.reference}</span>
-              <span>Autorización: {data.guidance[i]?.authorization_level}</span>
-              <span>Validación: {data.guidance[i]?.validation_status}</span>
-            </div>
-          </article>
+      <Modal title="Protocolos y resultados del motor" onClose={onClose}>
+        <p className="muted">Datos sintéticos · motor médico existente · sin validación clínica.</p>
+        {mission.snapshot.report.emergencies.map((e) => (
+          <section className="emergency-box" key={e.id}>
+            <h3>{e.title}</h3>
+            <p>{e.explanation}</p>
+            <p>{e.action}</p>
+          </section>
+        ))}
+        {mission.snapshot.report.assessments.map((a) => (
+          <section key={a.id}>
+            <h3>{a.risk_name}</h3>
+            <p>{a.explanation}</p>
+            {a.recommendations.map((r, i) => (
+              <p key={i}>
+                {r.display} · {r.note}
+              </p>
+            ))}
+          </section>
         ))}
       </Modal>
     );

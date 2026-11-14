@@ -116,6 +116,11 @@ class ImportBody(BaseModel):
 def import_measurements(code: str, body: ImportBody, request: Request, user: str = Header(alias='X-AEGIS-User')):
     engine = _engine(request)
     profile = _profile(engine, code, user, write=True)
+    return ingest(engine, profile, body, user)
+
+
+def ingest(engine: Engine, profile, body: ImportBody, user: str):
+    """Shared ingestion path for the API and chronological synthetic replay."""
     if body.format == 'csv':
         if not isinstance(body.content, str):
             raise HTTPException(422, 'CSV requiere texto.')

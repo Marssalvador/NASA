@@ -1,10 +1,15 @@
-param([int]$Port = 8000, [switch]$SkipBuild, [switch]$MedicalPostgres)
+param([int]$Port = 8000, [switch]$SkipBuild, [switch]$MedicalPostgres, [switch]$Presentation)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $pythonExe = Join-Path $projectRoot '.venv\Scripts\python.exe'
 if (-not (Test-Path -LiteralPath $pythonExe)) { throw 'Falta .venv. Sigue la instalación del README.' }
 Push-Location $projectRoot
 try {
+    if ($Presentation -and $MedicalPostgres) { throw 'Elige Presentation (local) o MedicalPostgres, no ambos.' }
+    if ($Presentation) {
+        $env:AEGIS_RECORD_BACKEND = 'memory'
+        Write-Host 'PULSS: presentacion local con datos sinteticos y motor medico real.' -ForegroundColor Cyan
+    }
     if ($MedicalPostgres) {
         if ([string]::IsNullOrWhiteSpace($env:AEGIS_DATABASE_URL)) {
             $env:AEGIS_DATABASE_URL = [Environment]::GetEnvironmentVariable('AEGIS_DATABASE_URL', 'User')
