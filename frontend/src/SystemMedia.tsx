@@ -10,7 +10,7 @@ export default function SystemMedia({
   region: string;
   compact?: boolean;
 }) {
-  const media = sectionMedia[region];
+  const media = sectionMedia[region]!;
   const [frame, setFrame] = useState<{ image: string; alt: string } | null>(null);
   const [previous, setPrevious] = useState<typeof frame>(null);
   const [failed, setFailed] = useState(false);
@@ -122,12 +122,8 @@ export default function SystemMedia({
           <button onClick={() => setAttempt((n) => n + 1)}>Reintentar</button>
         </div>
       )}
-      {!compact && (
+      {!compact && showVideo && (
         <div className="system-media-caption">
-          <span>
-            Ilustración generada · no representa al astronauta
-            {showVideo ? ' · Secuencia en bucle' : ''}
-          </span>
           {showVideo && (
             <button
               aria-label={paused ? 'Reproducir vídeo anatómico' : 'Pausar vídeo anatómico'}

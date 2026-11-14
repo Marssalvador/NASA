@@ -12,12 +12,11 @@ async function open(page: import('@playwright/test').Page) {
   await expect(page.locator('.anatomy-metrics')).toContainText('Frecuencia cardíaca');
 }
 
-test('real atlas rotates in overview; a system zooms in 3D, then plays its local loop', async ({
+test('real atlas rotates in overview; a system with media opens it directly over the hidden 3D', async ({
   page,
 }) => {
   await open(page);
   await expect(page.locator('.anatomy-canvas[data-ready="true"]')).toBeVisible({ timeout: 30000 });
-  await expect(page.locator('.anatomy-organ-preview img.system-media-current')).toBeVisible();
   await page.waitForTimeout(700);
   const canvas = page.locator('.anatomy-canvas canvas');
   const bounds = await canvas.boundingBox();
@@ -33,12 +32,15 @@ test('real atlas rotates in overview; a system zooms in 3D, then plays its local
   await page.waitForTimeout(300);
   expect(await canvas.screenshot()).not.toEqual(before);
   await page.getByRole('button', { name: 'Cardiovascular', exact: true }).click();
-  // The 3D body stays mounted and zooms first; the section media fades in afterwards.
-  await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-camera-mode', 'heart');
+  // Direct entry: the image appears at once; the 3D atlas stays mounted (hidden) for the return.
+  await expect(page.locator('.anatomy-stage')).toHaveClass(/has-media/);
   await expect(page.locator('.anatomy-stage canvas')).toHaveCount(1);
   await expect(page.locator('.stage-media')).toHaveAttribute('data-shown', 'true');
-  await expect(page.locator('.stage-media video')).toHaveAttribute('src', '/media/systems/heart.mp4');
-  await expect(page.locator('.anatomy-stage .system-media-current')).toBeVisible();
+  await expect(page.locator('.anatomy-stage .system-media-current')).toHaveAttribute(
+    'src',
+    '/media/systems/heart.webp',
+  );
+  await expect(page.locator('.system-media-caption')).toHaveCount(0);
   await expect(page.locator('.anatomy-marker')).toHaveCount(0);
   await expect(page.locator('.anatomy-mission-context')).toBeHidden();
   await expect(page.getByRole('region', { name: 'Interpretación del sistema' })).toBeVisible();
@@ -79,7 +81,7 @@ test('replay recalculates samples and trend', async ({ page }) => {
   await slider.focus();
   await slider.press('Home');
   await expect(page.locator('.anatomy-overall-status')).toHaveText('Datos insuficientes');
-  await page.getByRole('button', { name: 'Evolución temporal', exact: true }).click();
+  await page.getByRole('tab', { name: 'Tendencia', exact: true }).click();
   await expect(page.locator('.anatomy-trend-heading')).toContainText('n = 1');
   await page.getByRole('button', { name: 'Reproducir misión', exact: true }).click();
   await expect(slider).not.toHaveValue('0');
@@ -161,24 +163,18 @@ test('mobile shows a real 3D body and keeps the page within its viewport', async
   await expect(page.locator('.anatomy-system-heading h1')).toHaveText('Renal');
 });
 
-test('failing sites are marked on the body and the sensing ladder explains the next acquisition', async ({
+test('no callouts on the body; the sensing ladder explains the next acquisition', async ({
   page,
 }) => {
   await open(page);
   await expect(page.locator('.anatomy-canvas[data-ready="true"]')).toBeVisible({ timeout: 30000 });
-  const markers = page.locator('.anatomy-markers');
-  // Earlier specs may import a real heart-rate sample; real and synthetic cohorts never pool.
-  await expect(markers.locator('.anatomy-marker.alert').first()).toBeVisible();
-  await expect(markers).toContainText('Fuerza de prensión');
-  await expect(markers).toContainText('Resorción ósea');
-  await expect(markers.locator('.anatomy-marker.request')).toContainText('Calcio urinario');
-  await expect(markers.locator('[data-placed="true"]').first()).toBeVisible();
-  await markers.getByRole('button', { name: /Resorción ósea/ }).click();
+  await expect(page.locator('.anatomy-marker')).toHaveCount(0);
+  await expect(page.locator('.anatomy-finding-banner')).toHaveCount(0);
+  await expect(page.locator('.anatomy-organ-preview')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Óseo', exact: true }).click();
   await expect(page.locator('.anatomy-system-heading h1')).toHaveText('Óseo');
-  await expect(page.locator('.anatomy-stage .system-media')).toHaveAttribute(
-    'data-system',
-    'skeleton',
-  );
+  // No section image yet for this system: it falls back to the 3D camera zoom.
+  await expect(page.locator('.stage-media')).toHaveCount(0);
   await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-camera-mode', 'skeleton');
   await expect(page.locator('.anatomy-marker')).toHaveCount(0);
   const route = page.getByRole('region', { name: 'Ruta Resorción ósea' });

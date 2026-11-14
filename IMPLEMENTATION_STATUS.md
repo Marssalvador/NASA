@@ -71,3 +71,7 @@ Esta entrega usa im?genes est?ticas. SystemMedia admite v?deos locales en bucle,
 
 El atlas usa una paleta porcelana más opaca, con la piel de la cabeza casi opaca para que la cara se lea como cara. Al entrar en un sistema, la cámara se acerca sobre el mismo modelo (sin cambiar a mallas de detalle) y después aparece el medio de la sección. Solo Cardiovascular tiene vídeo: generado offline con Sunra (gpt-image-2 + Kling v3) y ralentizado localmente; ver docs/SECTION_MEDIA.md. Es una ilustración genérica generada por IA, sin revisión anatómica profesional, que no refleja datos ni lesiones del astronauta. Las capturas round4-home, round4-zoom y round4-section están en docs/visual-review/.
 
+### Tema oscuro y entrada directa (ronda 5)
+
+Interfaz oscura con fondo espacial generado. Atlas en cristal frío con borde azul. Entrada directa en las secciones con foto (5 de 7); Óseo y Metabólico siguen con el zoom 3D hasta que se generen sus imágenes (saldo de Sunra agotado). Se quitaron las etiquetas del cuerpo, el aviso de variación, la imagen del panel derecho y el rótulo de ilustración generada; las pestañas Estado/Tendencia/Detalle se muestran siempre. Las fotos son ilustraciones genéricas generadas por IA, sin revisión anatómica profesional. Capturas round5-* en docs/visual-review/. Los diálogos modales conservan todavía el tema claro.
+

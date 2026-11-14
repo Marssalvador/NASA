@@ -22,21 +22,63 @@ const key = env
 if (!key) throw new Error('No Sunra key found in .env');
 const headers = { Authorization: `Key ${key}`, 'Content-Type': 'application/json' };
 
+/** Shared art direction: dark mission-control theme, luminous glass anatomy, one warm focus. */
+const STYLE =
+  'Photorealistic futuristic medical 3D visualization on a deep space-black background (#04060b) with a very faint cool ' +
+  'blue haze. Translucent frosted-glass anatomy in luminous white and pale silver-blue with soft cyan-white rim light, ' +
+  'thin red arteries and subtle blue veins. Premium cinematic scientific render, high detail, soft depth of field, ' +
+  'composition centered with generous dark margins on every side. Healthy generic anatomy, no lesions, no blood. ' +
+  'No text, no labels, no UI, no watermark, no border.';
+const NEGATIVE =
+  'text, labels, watermark, morphing, distortion, extra organs, blood, wounds, fast motion, flicker, camera shake, cuts';
 const SECTIONS = {
   heart: {
     image:
-      'Photorealistic futuristic medical 3D visualization, close-up of an adult human torso from the neck to the upper abdomen, ' +
-      'frontal view, centered. Translucent frosted-glass anatomy in soft white and pale grey: skin and muscles semi-transparent ' +
-      'but clearly visible, ribcage and clavicles, trachea, translucent grey lungs with fine bronchial trees, thin red arteries ' +
-      'and soft grey-blue veins. The anatomical heart in the center glows warm red-orange from within with a soft halo. ' +
-      'Healthy generic anatomy, no lesions, no blood. Warm off-white studio background (#f4f1ee), soft diffused studio light, ' +
-      'subtle depth of field, premium scientific render. No text, no labels, no UI, no watermark, no border.',
+      'Close-up of an adult human torso from the neck to the upper abdomen, frontal view: ribcage, clavicles, trachea, ' +
+      'translucent lungs with fine bronchial trees; the anatomical heart in the center glows warm red-orange from within ' +
+      'with a soft halo. ' + STYLE,
     video:
-      'Locked-off camera, no camera movement. The heart beats gently and slowly; its soft red glow pulses calmly and ' +
-      'light flows softly through the red arteries. The rest of the anatomy stays perfectly still. Fixed lighting, ' +
-      'smooth slow motion, the last frame matches the first frame.',
-    negative:
-      'text, labels, watermark, morphing, distortion, extra organs, blood, wounds, fast motion, flicker, camera shake, cuts',
+      'Locked-off camera, no camera movement. The heart beats gently and slowly; its warm glow pulses calmly and light ' +
+      'flows softly through the red arteries. The rest of the anatomy stays perfectly still. Fixed lighting, smooth slow ' +
+      'motion, the last frame matches the first frame.',
+    negative: NEGATIVE,
+  },
+  lungs: {
+    image:
+      'Close-up of an adult human torso from the neck to the upper abdomen, frontal view: the trachea and both lungs with ' +
+      'detailed bronchial trees glow soft warm orange from within; ribcage and heart faintly visible behind glass. ' + STYLE,
+  },
+  kidneys: {
+    image:
+      'Posterior oblique view of an adult lower back and abdomen: lumbar spine, lower ribs and both kidneys with renal ' +
+      'arteries and ureters; the kidneys glow warm red-orange from within. ' + STYLE,
+  },
+  brain: {
+    image:
+      'Three-quarter view of an adult head and neck: a calm translucent glass face and skull revealing the brain and ' +
+      'brainstem; the brain glows warm red-orange from within with fine neural detail. ' + STYLE,
+  },
+  skeleton: {
+    image:
+      'Adult pelvis, lumbar spine and upper femurs inside a translucent glass body, frontal view; ivory-white bones, the ' +
+      'hip joints and femoral necks glow warm red-orange from within. ' + STYLE,
+  },
+  muscles: {
+    image:
+      'Adult torso and thighs, frontal view: translucent glass skin over clearly defined pectoral, abdominal and ' +
+      'quadriceps muscles in soft red tones that glow gently warm from within. ' + STYLE,
+  },
+  metabolic: {
+    image:
+      'Adult abdomen, frontal view inside a translucent glass torso: liver, stomach, pancreas and intestines; the liver ' +
+      'and pancreas glow warm red-orange from within. ' + STYLE,
+  },
+  backdrop: {
+    image:
+      'Ultra-wide cinematic deep space background for a futuristic mission-control interface. The upper 80% is calm, ' +
+      'almost black navy space with a sparse fine starfield and a very faint nebula haze. At the very bottom edge, the ' +
+      'curved horizon of planet Earth at night: golden city lights, a thin luminous blue atmospheric rim and a soft glow ' +
+      'reflecting upward. Huge empty dark negative space, photorealistic, no spacecraft, no text, no UI, no watermark.',
   },
 };
 

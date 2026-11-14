@@ -33,7 +33,7 @@ import type { DialogName } from './MissionDialogs';
 import type { LayersState } from './AnatomyViewer';
 import SystemMedia from './SystemMedia';
 import SystemAssessment from './SystemAssessment';
-import { prefetchSection } from './sectionMedia';
+import { prefetchSection, sectionMedia } from './sectionMedia';
 import './anatomy.css';
 
 const TrendPanel = lazy(() => import('./TrendPanel'));
@@ -106,13 +106,14 @@ export default function AnatomyApp() {
     [allMarkers, focused, region],
   );
   const isAlert = regionalStatus === 'review' || regionalStatus === 'emergency';
+  const hasMedia = Boolean(sectionMedia[region]);
   // Section entry: the 3D camera zooms to the system, holds briefly, then the media fades in.
   const [mediaShown, setMediaShown] = useState(false);
   useEffect(() => {
     setMediaShown(false);
     if (!focused) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const timer = window.setTimeout(() => setMediaShown(true), reduce ? 0 : CAMERA_DURATION_MS + 650);
+    const timer = window.setTimeout(() => setMediaShown(true), reduce ? 0 : 30);
     return () => window.clearTimeout(timer);
   }, [focused, region]);
   function selectRegion(id: string) {
@@ -239,12 +240,15 @@ export default function AnatomyApp() {
           </button>
         </div>
       </header>
-      <section className={`anatomy-stage ${focused ? 'focused' : ''}`}>
+      <section
+        className={`anatomy-stage ${focused ? 'focused' : ''} ${focused && hasMedia ? 'has-media' : ''}`}
+      >
         <Suspense fallback={<div className="anatomy-loader">Preparando visualización…</div>}>
           <AnatomyViewer
             markers={focused ? [] : markers}
+            labels={false}
             selected={region}
-            focused={focused}
+            focused={focused && !hasMedia}
             isolate={false}
             states={states}
             onSelect={selectRegion}
@@ -253,7 +257,7 @@ export default function AnatomyApp() {
             reset={reset}
           />
         </Suspense>
-        {focused && (
+        {focused && hasMedia && (
           <div
             className={`stage-media ${mediaShown ? 'shown' : ''}`}
             aria-hidden={!mediaShown}
@@ -475,20 +479,7 @@ export default function AnatomyApp() {
             <ChevronRight size={17} />
           </button>
         )}
-        {!focused && tab === 'state' && (
-          <div className="anatomy-organ-preview">
-            <SystemMedia region={region} compact />
-            <button
-              aria-label={`Ampliar ${system.name}`}
-              onClick={() => {
-                selectRegion(region);
-              }}
-            >
-              <Maximize2 size={19} />
-            </button>
-          </div>
-        )}
-        {(focused || tab !== 'state') && (
+        {
           <div className="anatomy-tabs" role="tablist" aria-label="Información del sistema">
             {(['state', 'trend', 'detail'] as const).map((t) => (
               <button
@@ -502,7 +493,7 @@ export default function AnatomyApp() {
               </button>
             ))}
           </div>
-        )}
+        }
         {tab === 'state' && (
           <>
             <div className="anatomy-metrics">
@@ -525,24 +516,6 @@ export default function AnatomyApp() {
                 <p className="anatomy-empty">No hay biomarcadores habilitados para este sistema.</p>
               )}
             </div>
-            <button
-              className={`anatomy-finding-banner ${isAlert ? 'alert' : ''}`}
-              onClick={() => setModal('protocols')}
-            >
-              {isAlert ? (
-                <TriangleAlert size={25} strokeWidth={1.4} />
-              ) : (
-                <ShieldCheck size={24} strokeWidth={1.3} />
-              )}
-              <span>
-                {isAlert
-                  ? 'Variación detectada'
-                  : regionalStatus === 'insufficient_data'
-                    ? 'Información insuficiente'
-                    : 'Sin desviaciones detectadas'}
-              </span>
-              <ChevronRight size={19} />
-            </button>
             {focused && (
               <SystemAssessment
                 region={region}
@@ -586,19 +559,6 @@ export default function AnatomyApp() {
                   <ChevronRight size={15} />
                 </button>
               ))}
-            <div className="anatomy-inspector-links">
-              <button onClick={() => setTab('trend')}>
-                Evolución temporal <ArrowUpRight size={13} />
-              </button>
-              <button
-                onClick={() => {
-                  setMetric(definitions[0]?.id ?? '');
-                  setModal('detail');
-                }}
-              >
-                Análisis y procedencia <ArrowUpRight size={13} />
-              </button>
-            </div>
           </>
         )}
         {tab === 'trend' && (
@@ -648,14 +608,6 @@ export default function AnatomyApp() {
             </button>
           </div>
         )}
-        <div className="anatomy-evaluation-note">
-          <span style={{ background: evaluationColor[regionalStatus] }} />
-          <p>
-            El color indica un estado de evaluación de datos.
-            <br />
-            No representa daño anatómico ni un diagnóstico.
-          </p>
-        </div>
       </aside>
       <footer className="anatomy-footer">
         <span>

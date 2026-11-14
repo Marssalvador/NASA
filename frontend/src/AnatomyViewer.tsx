@@ -38,6 +38,8 @@ interface Props {
   onReady?: () => void;
   /** false: focusing only moves the camera; every layer stays as in overview (no detail swap). */
   isolate?: boolean;
+  /** false: alert sites keep their soft glow but no callout labels are drawn. */
+  labels?: boolean;
 }
 interface MeshInfo {
   mesh: Mesh;
@@ -121,24 +123,24 @@ const ORGAN: Omit<Look, 'color'> = {
 /** Porcelain studio palette: frosted white tissue, ivory bone, red only where blood is. */
 const LOOKS: Record<string, Look> = {
   skin: {
-    color: '#e4dfdb',
-    roughness: 0.36,
-    core: 0.18,
-    headCore: 1,
-    power: 2.1,
-    rim: '#ffffff',
-    rimStrength: 0.55,
+    color: '#c9d3df',
+    roughness: 0.34,
+    core: 0.14,
+    headCore: 0.95,
+    power: 2,
+    rim: '#bfe4ff',
+    rimStrength: 0.75,
   },
   muscle: {
-    color: '#d3c6be',
+    color: '#aab6c4',
     roughness: 0.4,
-    core: 0.72,
+    core: 0.62,
     power: 1.5,
-    rim: '#fbf4f0',
-    rimStrength: 0.24,
+    rim: '#cfe8ff',
+    rimStrength: 0.34,
   },
   tendon: {
-    color: '#e6ded6',
+    color: '#c7d1dc',
     roughness: 0.34,
     core: 0.6,
     power: 1.5,
@@ -146,7 +148,7 @@ const LOOKS: Record<string, Look> = {
     rimStrength: 0.2,
   },
   skeleton: {
-    color: '#f1ece3',
+    color: '#e4eaf1',
     roughness: 0.55,
     core: 0.95,
     power: 2.4,
@@ -490,7 +492,7 @@ function StudioEnvironment() {
     const room = new RoomEnvironment();
     const texture = generator.fromScene(room, 0.04).texture;
     scene.environment = texture;
-    scene.environmentIntensity = 0.42;
+    scene.environmentIntensity = 0.3;
     invalidate();
     return () => {
       scene.environment = null;
@@ -506,10 +508,10 @@ function Studio() {
   return (
     <>
       <StudioEnvironment />
-      <hemisphereLight args={['#fffaf3', '#8f8276', 0.4]} />
-      <directionalLight position={[2.2, 3.4, 3.6]} intensity={1.55} color="#fff6ea" />
+      <hemisphereLight args={['#dfeaff', '#1a2233', 0.35]} />
+      <directionalLight position={[2.2, 3.4, 3.6]} intensity={1.2} color="#f4f8ff" />
       <directionalLight position={[-3, 1.8, 1.2]} intensity={0.45} color="#eef1ff" />
-      <directionalLight position={[0.4, 2.6, -3.2]} intensity={1.25} color="#fffaf4" />
+      <directionalLight position={[0.4, 2.6, -3.2]} intensity={1.6} color="#9fd0ff" />
     </>
   );
 }
@@ -714,13 +716,15 @@ export default function AnatomyViewer(props: Props) {
               </DetailBoundary>
             )}
             <CameraDirector {...props} />
-            {ready && <MarkerProjector markers={markers} layer={layer} />}
+            {ready && props.labels !== false && <MarkerProjector markers={markers} layer={layer} />}
             <RenderProbe id="main" />
             <ContextRecovery onLost={setContextLost} />
           </Canvas>
         </Suspense>
       </ViewBoundary>
-      {ready && <MarkerLayer markers={markers} layer={layer} onSelect={props.onSelect} />}
+      {ready && props.labels !== false && (
+        <MarkerLayer markers={markers} layer={layer} onSelect={props.onSelect} />
+      )}
     </div>
   );
 }

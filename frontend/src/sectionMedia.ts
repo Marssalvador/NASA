@@ -1,10 +1,9 @@
 /** Local assets only. Optional videos must have a seamless loop authored into the file. */
-export const sectionMedia: Record<string, { image: string; video?: string; alt: string }> = {
+/** Systems without an entry fall back to the 3D camera zoom on the atlas. */
+export const sectionMedia: Partial<Record<string, { image: string; video?: string; alt: string }>> = {
   heart: {
-    // Sunra (gpt-image-2 still → Kling v3 loop, same start/end frame), slowed ×2 locally.
-    image: '/media/systems/heart-loop.webp',
-    video: '/media/systems/heart.mp4',
-    alt: 'Ilustración generada del corazón latiendo dentro de un tórax translúcido',
+    image: '/media/systems/heart.webp',
+    alt: 'Corazón iluminado dentro de un tórax translúcido',
   },
   lungs: {
     image: '/media/systems/lungs.webp',
@@ -18,17 +17,9 @@ export const sectionMedia: Record<string, { image: string; video?: string; alt: 
     image: '/media/systems/brain.webp',
     alt: 'Ilustración anatómica del encéfalo y tronco cerebral',
   },
-  skeleton: {
-    image: '/media/systems/skeleton.webp',
-    alt: 'Ilustración anatómica de pelvis, columna y fémures',
-  },
   muscles: {
     image: '/media/systems/muscles.webp',
     alt: 'Ilustración anatómica de la musculatura del tronco y muslos',
-  },
-  metabolic: {
-    image: '/media/systems/metabolic.webp',
-    alt: 'Ilustración anatómica del hígado, páncreas e intestino',
   },
 };
 
