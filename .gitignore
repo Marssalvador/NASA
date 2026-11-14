@@ -11,3 +11,5 @@ playwright-report/
 .env
 *.tsbuildinfo
 design-review/
+assets/models/source/
+frontend/public/models/humanoid.glb

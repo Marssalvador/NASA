@@ -1,0 +1,75 @@
+{
+  "repository": "pernelluvsya/atlas-proto",
+  "revision": "236f3a183108bcccc1f95fda1558be19d7486d00",
+  "license": "CC-BY-SA-4.0",
+  "files": [
+    {
+      "file": "MuscularSystem100.glb",
+      "source": "https://raw.githubusercontent.com/pernelluvsya/atlas-proto/236f3a183108bcccc1f95fda1558be19d7486d00/MuscularSystem100.glb",
+      "sha256": "7e6d6ab259b5e3a3fb376b1007a9f6418c65de27964fe67c1b29865a87498107",
+      "bytes": 7066704
+    },
+    {
+      "file": "SkeletalSystem100.glb",
+      "source": "https://raw.githubusercontent.com/pernelluvsya/atlas-proto/236f3a183108bcccc1f95fda1558be19d7486d00/SkeletalSystem100.glb",
+      "sha256": "e7aaa1f96de8cc8b0e772c69bae8ebcc439a7911ac974aaa9337dac14d040708",
+      "bytes": 7744396
+    },
+    {
+      "file": "VisceralSystem100.glb",
+      "source": "https://raw.githubusercontent.com/pernelluvsya/atlas-proto/236f3a183108bcccc1f95fda1558be19d7486d00/VisceralSystem100.glb",
+      "sha256": "73b99cade4c51a903e103fe8091978dd6d3a86a59c1a91ceeed54cf107b3af49",
+      "bytes": 3038256
+    },
+    {
+      "file": "CardioVascular41.glb",
+      "source": "https://raw.githubusercontent.com/pernelluvsya/atlas-proto/236f3a183108bcccc1f95fda1558be19d7486d00/CardioVascular41.glb",
+      "sha256": "49440c765f1a41ff45ac47585c74e3b18de80930092747ee72ff9914c9a59b3f",
+      "bytes": 8000732
+    },
+    {
+      "file": "NervousSystem100.glb",
+      "source": "https://raw.githubusercontent.com/pernelluvsya/atlas-proto/236f3a183108bcccc1f95fda1558be19d7486d00/NervousSystem100.glb",
+      "sha256": "875c8a66c5f82a9606a6237f3bc9eaf6f99d95697f94d3f08991e8ee784ed5a3",
+      "bytes": 9434656
+    }
+  ],
+  "bodyparts3d": {
+    "source": "https://dbarchive.biosciencedbc.jp/data/bodyparts3d/LATEST/isa_BP3D_4.0_obj_99.zip",
+    "sha256": "40665852c49f218326590e204db91064a1ecfc3c6f8cbd7bbbcaac62c7cd409e",
+    "license": "CC-BY-4.0",
+    "license_source": "https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html",
+    "parts": [
+      "FJ2810",
+      "FJ3147",
+      "FJ3145"
+    ],
+    "transform": {
+      "scale": 0.001,
+      "axes": [
+        0,
+        2,
+        1
+      ],
+      "signs": [
+        1,
+        1,
+        -1
+      ],
+      "offset_m": [
+        0,
+        0.07478,
+        -0.09815
+      ]
+    }
+  },
+  "derived": {
+    "file": "humanoid.glb",
+    "sha256": "995f06bf603e2090237ea26e5ee88a1f66eb2d7237047410607b9f777be59e89",
+    "bytes": 11833832,
+    "parts": 2218,
+    "render_pieces": 74,
+    "triangles": 2443130,
+    "license": "CC-BY-SA-4.0"
+  }
+}
