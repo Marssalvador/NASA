@@ -2354,8 +2354,8 @@ button.sensing-chip:hover {
   --line: var(--hairline);
   color: var(--ink);
   background:
-    linear-gradient(180deg, rgba(4, 6, 11, 0.55) 0%, rgba(4, 6, 11, 0) 45%),
-    url('/media/backdrop.webp') center bottom / cover no-repeat,
+    linear-gradient(180deg, rgba(4, 6, 11, 0.7) 0%, rgba(4, 6, 11, 0) 60%),
+    url('/media/backdrop.webp') center calc(100% + 21vh) / max(150vw, 220vh) auto no-repeat,
     var(--space);
   color-scheme: dark;
 }

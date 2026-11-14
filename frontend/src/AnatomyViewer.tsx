@@ -8,7 +8,9 @@ import {
   Color,
   Group,
   Mesh,
+  AdditiveBlending,
   MeshStandardMaterial,
+  NormalBlending,
   PerspectiveCamera,
   PMREMGenerator,
   Vector3,
@@ -112,61 +114,72 @@ interface Look {
   power: number;
   rim: string;
   rimStrength: number;
+  /** Light-emitting glass: added to the dark backdrop instead of covering it. */
+  additive?: boolean;
 }
 const ORGAN: Omit<Look, 'color'> = {
-  roughness: 0.42,
-  core: 0.88,
-  power: 2.2,
-  rim: '#ffffff',
-  rimStrength: 0.18,
+  roughness: 0.4,
+  core: 0.7,
+  power: 2,
+  rim: '#cfe8ff',
+  rimStrength: 0.3,
 };
-/** Porcelain studio palette: frosted white tissue, ivory bone, red only where blood is. */
+/**
+ * Hologram palette for the dark theme: skin, muscle, tendon and bone are additive glass
+ * (mostly rim light), organs stay solid enough to read, and the selected system glows warm.
+ */
 const LOOKS: Record<string, Look> = {
   skin: {
-    color: '#c9d3df',
-    roughness: 0.34,
-    core: 0.14,
-    headCore: 0.95,
-    power: 2,
-    rim: '#bfe4ff',
-    rimStrength: 0.75,
+    color: '#1b2a3a',
+    roughness: 0.3,
+    core: 0.05,
+    headCore: 0.3,
+    power: 2.2,
+    rim: '#9fdcff',
+    rimStrength: 1.1,
+    additive: true,
   },
   muscle: {
-    color: '#aab6c4',
+    color: '#22303f',
     roughness: 0.4,
-    core: 0.62,
-    power: 1.5,
-    rim: '#cfe8ff',
-    rimStrength: 0.34,
+    core: 0.35,
+    power: 1.6,
+    rim: '#6fb8ff',
+    rimStrength: 0.55,
+    additive: true,
   },
   tendon: {
-    color: '#c7d1dc',
-    roughness: 0.34,
-    core: 0.6,
+    color: '#2a3a4a',
+    roughness: 0.35,
+    core: 0.4,
     power: 1.5,
-    rim: '#ffffff',
-    rimStrength: 0.2,
+    rim: '#9fd0ff',
+    rimStrength: 0.4,
+    additive: true,
   },
   skeleton: {
-    color: '#e4eaf1',
-    roughness: 0.55,
-    core: 0.95,
-    power: 2.4,
-    rim: '#ffffff',
-    rimStrength: 0.14,
+    color: '#4b5b6e',
+    roughness: 0.5,
+    core: 0.7,
+    power: 2,
+    rim: '#d8eeff',
+    rimStrength: 0.45,
+    additive: true,
   },
-  lung: { ...ORGAN, color: '#d8d3d0', core: 0.45, power: 1.4, rimStrength: 0.32 },
-  airway: { ...ORGAN, color: '#e7e0da' },
-  digestive: { ...ORGAN, color: '#ddd5cf' },
-  liver: { ...ORGAN, color: '#d3c7c0' },
-  viscera: { ...ORGAN, color: '#ddd4ce' },
-  kidney: { ...ORGAN, color: '#d8c9c2' },
-  brain: { ...ORGAN, color: '#e8e0dc' },
-  eye: { ...ORGAN, color: '#f4f1eb' },
-  cardiac: { ...ORGAN, color: '#c94636', core: 0.97, rim: '#ffd9cf' },
-  cardiac_artery: { ...ORGAN, color: '#cf4e3e', core: 0.97, rim: '#ffd9cf' },
-  cardiac_vein: { ...ORGAN, color: '#b6574f', core: 0.97, rim: '#ffd9cf' },
+  lung: { ...ORGAN, color: '#3d5266', core: 0.22, power: 1.4, rimStrength: 0.5 },
+  airway: { ...ORGAN, color: '#4d6174' },
+  digestive: { ...ORGAN, color: '#3f5063', core: 0.45 },
+  liver: { ...ORGAN, color: '#45505f', core: 0.5 },
+  viscera: { ...ORGAN, color: '#415264', core: 0.45 },
+  kidney: { ...ORGAN, color: '#4a4f5e' },
+  brain: { ...ORGAN, color: '#55677a' },
+  eye: { ...ORGAN, color: '#7d8fa3' },
+  cardiac: { ...ORGAN, color: '#d2452f', core: 0.97, rim: '#ffb59f', rimStrength: 0.5 },
+  cardiac_artery: { ...ORGAN, color: '#de4c34', core: 0.97, rim: '#ffb59f', rimStrength: 0.5 },
+  cardiac_vein: { ...ORGAN, color: '#b24a45', core: 0.97, rim: '#ffb59f', rimStrength: 0.5 },
 };
+const SELECTED_GLOW = new Color('#ff4a2e');
+const BLACK = new Color('#000000');
 const ALERT_COLOR = new Color('#de3b2c');
 const REGION_INDEX = ['heart', 'lungs', 'kidneys', 'brain', 'skeleton', 'muscles', 'metabolic', 'skin'];
 const MAX_SPOTS = 4;
@@ -217,7 +230,8 @@ function materialFor(tissue: string, region: string, spots: SpotUniforms) {
     transparent: true,
     opacity: 1,
     depthWrite: false,
-    envMapIntensity: tissue === 'skin' ? 1 : 0.75,
+    blending: look.additive ? AdditiveBlending : NormalBlending,
+    envMapIntensity: LOOKS[tissue]?.additive ? 0.35 : 0.6,
   });
   const uniforms = {
     aegisCore: { value: look.core },
@@ -302,12 +316,12 @@ function opacityFor(part: MeshInfo, selected: string, mode: ViewMode) {
     return active ? 0.98 : 0.16;
   }
   const zoom = mode === 'zoom';
-  if (region === 'skin') return zoom ? 0.5 : 0.64;
-  if (tissue === 'tendon') return active ? 0.85 : zoom ? 0.3 : 0.45;
-  if (region === 'muscles') return active ? 0.94 : zoom ? 0.46 : 0.72;
-  if (region === 'skeleton') return active ? 0.98 : 0.9;
-  if (tissue === 'lung') return active ? 0.86 : zoom ? 0.42 : 0.5;
-  return active ? 0.98 : 0.86;
+  if (region === 'skin') return zoom ? 0.75 : 0.9;
+  if (tissue === 'tendon') return active ? 0.85 : 0.35;
+  if (region === 'muscles') return active ? 0.92 : zoom ? 0.35 : 0.45;
+  if (region === 'skeleton') return active ? 0.96 : 0.55;
+  if (tissue === 'lung') return active ? 0.88 : 0.4;
+  return active ? 0.98 : 0.5;
 }
 
 const layerOf = (part: MeshInfo): keyof LayersState =>
@@ -366,7 +380,12 @@ function Anatomy({
         part.material.opacity = target;
         part.material.userData.initialized = true;
       }
-      part.material.depthWrite = target >= 0.95 && (part.material.userData.look as Look).core > 0.9;
+      const look = part.material.userData.look as Look;
+      const glowing = part.region === selected && part.region !== 'skin';
+      part.material.blending = look.additive && !glowing ? AdditiveBlending : NormalBlending;
+      part.material.emissive.copy(glowing ? SELECTED_GLOW : BLACK);
+      part.material.emissiveIntensity = glowing ? 0.55 : 0;
+      part.material.depthWrite = target >= 0.95 && look.core > 0.9;
     }
     invalidate();
   }, [parts, selected, focused, isolate, layers, invalidate, hiddenRegion, visible]);
