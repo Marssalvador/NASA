@@ -1,0 +1,87 @@
+{
+  "project_ref": "hudkkzrkwdbgoltrtlqu",
+  "run_id": "ca090913bea44286914101956a787ea6",
+  "checks": {
+    "connection_and_migrations": {
+      "database": "postgres",
+      "client_to_pooler_tls": true,
+      "server_reported_pooler_tls": false,
+      "expected": [
+        "20261114160129",
+        "20261114160157",
+        "20261114160340",
+        "20261114160412",
+        "20261114160854"
+      ],
+      "applied": [
+        "20261114160129",
+        "20261114160157",
+        "20261114160340",
+        "20261114160412",
+        "20261114160854"
+      ]
+    },
+    "rls_enabled": [
+      "audit_log",
+      "biomarker_definitions",
+      "risk_definitions",
+      "clinical_protocols",
+      "biomarker_risk_links",
+      "medical_history",
+      "physiological_baselines",
+      "measurements",
+      "mission_events",
+      "test_requests",
+      "astronaut_access",
+      "model_versions",
+      "derived_features",
+      "risk_assessments",
+      "astronauts",
+      "assessment_feedback"
+    ],
+    "a112_persistence": {
+      "measurements": 796,
+      "baselines": 46,
+      "assessments": 4,
+      "test_requests": 6,
+      "assessment_ids": [
+        "40088f9a-b3ab-48f5-8712-0c7a68dbf783",
+        "0f2b015b-7990-41a4-bbfa-f43c1f18f0ab",
+        "37620c04-9216-4c3b-9be4-15183b9ca2f5",
+        "96c7e83c-f71f-4929-bc86-d6189a748b71"
+      ]
+    },
+    "api_workflow": {
+      "initial_measurement_id": 1608,
+      "request_id": "07c20cc3-d49b-4d88-89a3-e0141672221a",
+      "result_measurement_id": 1609,
+      "first_assessment_id": "74a655ab-c05a-41ce-9024-55a195032e6b",
+      "reevaluation_id": "9de8bf20-a2f4-4fc6-80ba-8ae2e26ded80",
+      "certainty": "confirmed_finding",
+      "persisted_reloaded": true,
+      "transport": "FastAPI ASGI TestClient -> real Supabase PostgreSQL"
+    },
+    "unprivileged_rls": {
+      "role": "authenticated",
+      "rolsuper": false,
+      "rolbypassrls": false,
+      "cross_record_reads_empty": true,
+      "cross_record_insert_denied": true,
+      "cross_record_api_404": true
+    }
+  },
+  "synthetic_fixture": {
+    "astronaut_id": "94cc77dd-24ae-49ff-9db6-ed6fe557a0bd",
+    "code": "Z-000",
+    "users": {
+      "owner": "15e125ed-9d28-430e-b1ea-dee01887883e",
+      "other": "6721fe5b-87f5-4dfe-842b-a2d99277e652",
+      "surgeon": "0c267f8a-831a-449d-956b-a9a62fbe57b3"
+    },
+    "retained": true,
+    "note": "New tagged synthetic fixtures retained; no original measurements changed."
+  },
+  "verified_at_utc": "2026-11-14T17:22:02.275335+00:00",
+  "verification_status": "passed",
+  "live_tests_passed": 4
+}

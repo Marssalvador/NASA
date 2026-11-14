@@ -124,9 +124,9 @@ antes de llegar al router (no implementado en este demostrador).
 * Pendiente: conceder accesos reales (`astronaut_access`) a usuarios de Supabase Auth, verificación del JWT en la
   API, conexión del frontend a `/api/v2` y revisión médica de los protocolos.
 
-## 9. Verificación adicional de PostgreSQL — conexión pendiente
+## 9. Verificación real de PostgreSQL — superada el 14 de noviembre de 2026
 
-La comprobación del 14 de noviembre no encontró `AEGIS_DATABASE_URL` en el proceso, las variables de usuario o sistema de Windows, ni en los archivos `.env` habituales. Por ello **no se estableció una conexión real, no se verificaron de nuevo las migraciones remotas y no se ejecutó el recorrido en Supabase**. Las afirmaciones anteriores sobre pruebas SQL corresponden a la fase previa documentada; no se han vuelto a comprobar en esta ejecución.
+El usuario introdujo la contraseña de forma oculta mediante `scripts/configure-postgres.ps1`; la conexión se guardó como variable de usuario `AEGIS_DATABASE_URL`, fuera del repositorio. **La conexión al proyecto `hudkkzrkwdbgoltrtlqu` y las cuatro pruebas PostgreSQL han pasado**, sin pruebas omitidas en esa ejecución: `4 passed` en 168,28 s. Se conservan además las 80 pruebas locales superadas en la ejecución anterior. Las cinco migraciones locales coinciden exactamente con las cinco versiones aplicadas; no se modificaron ni volvieron a aplicar.
 
 Se corrigieron problemas encontrados en la revisión y cubiertos por regresiones locales:
 
@@ -137,8 +137,25 @@ Se corrigieron problemas encontrados en la revisión y cubiertos por regresiones
 
 `scripts/verify-postgres.ps1` lee la variable del proceso o del usuario sin imprimirla y ejecuta la prueba PostgreSQL anterior y `tests/test_medical_postgres_workflow.py`. Se detiene con error si falta la variable; nunca sustituye esta comprobación por el modo en memoria.
 
-La nueva suite real está preparada para verificar TLS, las cinco versiones de migración, RLS en las tablas y persistencia de A-112; recorrer importación, tendencia, evaluación, prueba y reevaluación mediante el router real `/api/v2`; recargar los resultados desde conexiones independientes; y demostrar lecturas vacías/inserciones denegadas con `authenticated`, `rolsuper=false`, `rolbypassrls=false`. Usa transporte ASGI de pruebas hacia PostgreSQL real, no un servidor HTTP público. **Nada de esto se considera superado hasta ejecutar con una conexión válida.**
+Resultados verificados, con evidencia en `docs/verification/postgres-live.json`:
 
-La suite añade usuarios ficticios `@aegis.invalid` sin contraseñas, permisos explícitos y dos expedientes sintéticos `Z-NNN`, además de nuevas evaluaciones/referencias/solicitudes para el A-112 existente. El recorrido de inserción y resultado se realiza sobre una copia sintética para conservar intactas sus mediciones originales. Esos datos se conservan etiquetados para verificar persistencia; no hay limpieza destructiva, cambios de esquema ni cambios en migraciones. Si supera las pruebas, guarda identificadores y contadores, sin credenciales, en `docs/verification/postgres-live.json`.
+| Comprobación | Resultado observado |
+| --- | --- |
+| Conexión | PostgreSQL real, proyecto correcto, TLS entre el cliente y el Session pooler. |
+| Migraciones | `20261114160129`, `20261114160157`, `20261114160340`, `20261114160412`, `20261114160854`, todas aplicadas. |
+| RLS | Activo en las 16 tablas del esquema `aegis`. |
+| A-112 persistido | 796 mediciones originales, 46 referencias versionadas, 4 evaluaciones y 6 solicitudes de pruebas. Recargados desde conexiones independientes. |
+| Recorrido completo | Importación de una HRV sintética → tendencia con enlace a esa medición → evaluación → solicitud CTX-I → resultado sintético → reevaluación persistida `confirmed_finding`, enlazada a la evaluación anterior. |
+| Identificadores del recorrido | Copia `Z-000`; nueva medición 1608; resultado 1609; solicitud `07c20cc3-d49b-4d88-89a3-e0141672221a`; reevaluación `9de8bf20-a2f4-4fc6-80ba-8ae2e26ded80`. |
+| Aislamiento sin privilegios | `current_user=authenticated`, `rolsuper=false`, `rolbypassrls=false`: lecturas de otro expediente vacías e INSERT ajeno rechazado por PostgreSQL. La API devuelve 404 para expediente, tendencias, evaluaciones, sistemas, medición y solicitud ajenos. |
+| Autorización del resultado | El propietario sin rol médico recibe 403 antes de insertar datos; el médico de vuelo con escritura completa el resultado y su reevaluación. |
 
-Sigue pendiente verificar JWT: `X-AEGIS-User` es una identidad de desarrollo. Que las consultas usen RLS no autentica por sí solo al titular de esa cabecera. Tampoco se ha conectado la interfaz a `/api/v2`.
+Las pruebas del recorrido usan el router real FastAPI mediante ASGI y PostgreSQL remoto. Además se arrancó **la aplicación completa con Uvicorn en `http://127.0.0.1:8003`, con `AEGIS_RECORD_BACKEND=postgres`**. Peticiones HTTP reales devolvieron 200 para expediente, tendencias, evaluaciones y regiones de A-112, y para una medición original. Se compararon sus evaluaciones con los identificadores consultados en PostgreSQL. También se recuperaron por HTTP el resultado 1609 y su reevaluación confirmada en Z-000; otro usuario recibió 404. Evidencia: `docs/verification/postgres-http.json`.
+
+Se corrigió una comprobación de las pruebas: `pg_stat_ssl` muestra el tramo pooler → PostgreSQL, no el cliente → pooler. TLS del cliente se comprobó mediante `conn.pgconn.ssl_in_use`, sin relajar `sslmode=require`. El valor observado del tramo interno fue `false` y queda registrado por separado; no se afirma cifrado de extremo a extremo.
+
+La suite añadió tres usuarios ficticios `@aegis.invalid` sin contraseñas, permisos explícitos y dos expedientes sintéticos `Z-000` y `Z-001`, además de nuevas evaluaciones/referencias/solicitudes para el A-112 existente. El recorrido de inserción y resultado se realizó sobre una copia sintética para conservar intactas sus 796 mediciones originales. Esos datos quedan etiquetados y conservados para verificar persistencia; no hubo limpieza destructiva, cambios de esquema ni cambios en migraciones. Los archivos de evidencia contienen solo identificadores sintéticos, contadores y respuestas HTTP; no contienen credenciales.
+
+Para arrancar otra vez el modo remoto: `./scripts/start.ps1 -MedicalPostgres -SkipBuild -Port 8003`. El arranque habitual conserva el modo offline por defecto. Para repetir las pruebas: `./scripts/verify-postgres.ps1`; una repetición añade nuevas copias sintéticas y evaluaciones, no elimina las anteriores.
+
+**Errores funcionales restantes en este recorrido: ninguno observado.** Sigue pendiente verificar JWT: `X-AEGIS-User` es una identidad de desarrollo. Que las consultas usen RLS no autentica por sí solo al titular de esa cabecera. Tampoco se ha conectado la interfaz a `/api/v2`. Los protocolos y el adaptador por reglas siguen siendo demostrativos, sin validación clínica; la verificación de PostgreSQL no cambia ese estado. La advertencia no bloqueante de Starlette/httpx permanece.

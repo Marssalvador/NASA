@@ -3,7 +3,7 @@
 Credentials come only from AEGIS_DATABASE_URL. Tests never print the connection string.
 Evidence contains synthetic identifiers/counts, not connection parameters or tokens.
 """
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 import json
 import os
 from pathlib import Path
@@ -32,7 +32,8 @@ def live():
     except psycopg.Error:
         pytest.fail('Invalid PostgreSQL connection settings; credentials suppressed', pytrace=False)
     assert PROJECT in target.get('host', '') + target.get('user', ''), 'Connection must identify AEGIS-Development'
-    evidence = {'project_ref': PROJECT, 'run_id': uuid.uuid4().hex, 'checks': {}}
+    evidence = {'project_ref': PROJECT, 'run_id': uuid.uuid4().hex,
+                'started_at_utc': datetime.now(timezone.utc).isoformat(), 'checks': {}}
     # Never fall back to a local/memory repository if the connection is unavailable.
     try:
         connection = psycopg.connect(DSN, connect_timeout=12, row_factory=dict_row)
@@ -41,11 +42,14 @@ def live():
     with connection as conn:
         identity = conn.execute("select current_database() as database, version() as version, "
                                 "(select ssl from pg_stat_ssl where pid = pg_backend_pid()) as tls").fetchone()
-        assert identity['tls'] is True, 'Live connection must use TLS'
+        # With Supavisor, pg_stat_ssl describes pooler -> PostgreSQL, not this client.
+        client_tls = bool(conn.pgconn.ssl_in_use)
+        assert client_tls is True, 'Client connection to the Supabase pooler must use TLS'
         expected = sorted(p.name.split('_', 1)[0] for p in Path('supabase/migrations').glob('*.sql'))
         applied = [r['version'] for r in conn.execute('select version from supabase_migrations.schema_migrations order by version')]
         assert len(expected) == 5 and set(expected) <= set(applied)
-        evidence['checks']['connection_and_migrations'] = {'database': identity['database'], 'tls': True,
+        evidence['checks']['connection_and_migrations'] = {'database': identity['database'], 'client_to_pooler_tls': client_tls,
+                                                         'server_reported_pooler_tls': identity['tls'],
                                                          'expected': expected, 'applied': applied}
         tables = conn.execute("select c.relname, c.relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace "
                               "where n.nspname='aegis' and c.relkind='r'").fetchall()
@@ -100,6 +104,9 @@ def live():
                'users': users, 'evidence': evidence}
     destination = Path('docs/verification/postgres-live.json')
     destination.parent.mkdir(parents=True, exist_ok=True)
+    evidence['completed_at_utc'] = datetime.now(timezone.utc).isoformat()
+    required = {'connection_and_migrations', 'rls_enabled', 'a112_persistence', 'api_workflow', 'unprivileged_rls'}
+    evidence['verification_status'] = 'passed' if required <= set(evidence['checks']) else 'incomplete'
     destination.write_text(json.dumps(evidence, indent=2, default=str), encoding='utf-8')
 
 

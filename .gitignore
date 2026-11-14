@@ -17,3 +17,4 @@ frontend/public/models/overview.glb
 frontend/public/models/detail-*.glb
 frontend/public/models/runtime-manifest.json
 assets/illustrations/source/
+data/postgres-setup-state.json

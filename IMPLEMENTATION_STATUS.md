@@ -1,12 +1,12 @@
 # AEGIS · Estado de implementación
 
-## Comprobación del backend médico contra Supabase (pendiente de conexión)
+## Comprobación del backend médico contra Supabase (superada)
 
-Última suite local: **80 pruebas superadas, 4 de PostgreSQL omitidas** porque `AEGIS_DATABASE_URL` no está configurada. No hay evidencia nueva de conexión a Supabase, persistencia remota ni recorrido completo contra PostgreSQL. Se corrigió el alcance RLS de las consultas por solicitud, la autorización previa al registro de resultados y un fallo en la API de correcciones. Las migraciones y la interfaz no se modificaron. Recorrido real y limitaciones documentados en `docs/MEDICAL_RECORD_ARCHITECTURE.md`, sección 9. Ejecutar `scripts/verify-postgres.ps1` cuando la variable local esté disponible; no imprime credenciales.
+**80 pruebas locales superadas y, en una ejecución posterior, las 4 pruebas PostgreSQL superadas contra Supabase real (168,28 s).** `AEGIS_DATABASE_URL` está guardada como variable local de usuario, sin credenciales en el repositorio. Se verificaron las cinco migraciones, RLS en 16 tablas, A-112 con sus 796 mediciones originales/46 referencias/4 evaluaciones/6 solicitudes y el recorrido completo con confirmación CTX-I sobre la copia sintética Z-000. El aislamiento se comprobó con `authenticated`, sin superusuario ni bypassrls. API completa en `http://127.0.0.1:8003`, backend PostgreSQL, con lecturas HTTP 200 y accesos a otro expediente 404. Evidencias JSON y limitaciones en `docs/verification/` y `docs/MEDICAL_RECORD_ARCHITECTURE.md`, sección 9. Migraciones e interfaz intactas. JWT real, integración visual con `/api/v2` y revisión clínica siguen pendientes.
 
 Versión local 0.1.0 · Actualización anatómica y verificación: 14 de noviembre de 2026.
 
-El flujo completo está implementado y probado: selección de astronauta, gemelo interactivo, registro dinámico, importación, SQLite, análisis personal, incertidumbre, hallazgos, comprobaciones y replay. La aplicación se sirve desde http://127.0.0.1:8000. No se ha publicado ni conectado a servicios cloud.
+El flujo completo está implementado y probado: selección de astronauta, gemelo interactivo, registro dinámico, importación, SQLite, análisis personal, incertidumbre, hallazgos, comprobaciones y replay. La aplicación visual se sirve desde http://127.0.0.1:8000. El backend médico de desarrollo también está probado contra Supabase y se sirve en el puerto 8003; no se ha publicado la aplicación.
 
 | Fase | Resultado real |
 | --- | --- |

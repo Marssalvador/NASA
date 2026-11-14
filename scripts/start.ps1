@@ -1,10 +1,18 @@
-param([int]$Port = 8000, [switch]$SkipBuild)
+param([int]$Port = 8000, [switch]$SkipBuild, [switch]$MedicalPostgres)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $pythonExe = Join-Path $projectRoot '.venv\Scripts\python.exe'
 if (-not (Test-Path -LiteralPath $pythonExe)) { throw 'Falta .venv. Sigue la instalación del README.' }
 Push-Location $projectRoot
 try {
+    if ($MedicalPostgres) {
+        if ([string]::IsNullOrWhiteSpace($env:AEGIS_DATABASE_URL)) {
+            $env:AEGIS_DATABASE_URL = [Environment]::GetEnvironmentVariable('AEGIS_DATABASE_URL', 'User')
+        }
+        if ([string]::IsNullOrWhiteSpace($env:AEGIS_DATABASE_URL)) { throw 'Falta AEGIS_DATABASE_URL para activar el backend PostgreSQL.' }
+        $env:AEGIS_RECORD_BACKEND = 'postgres'
+        Write-Host 'Expediente medico: PostgreSQL / Supabase' -ForegroundColor Cyan
+    }
     if (-not $SkipBuild) {
         Push-Location (Join-Path $projectRoot 'frontend')
         try { npm run build; if ($LASTEXITCODE -ne 0) { throw 'Ha fallado la compilación del frontend.' } }

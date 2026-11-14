@@ -1,0 +1,35 @@
+{
+  "checked_at_utc": "2026-11-14T17:22:02.275335+00:00",
+  "server": "http://127.0.0.1:8003",
+  "backend": "postgres",
+  "project_ref": "hudkkzrkwdbgoltrtlqu",
+  "responses": {
+    "/api/v2/astronauts/A-112/record": 200,
+    "/api/v2/astronauts/A-112/trends?biomarker=hrv&days=30": 200,
+    "/api/v2/astronauts/A-112/evaluations": 200,
+    "/api/v2/astronauts/A-112/body-systems": 200,
+    "/api/v2/measurements/413": 200
+  },
+  "record": {
+    "latest_biomarkers": 20,
+    "baselines": 46,
+    "open_test_requests": 6
+  },
+  "persisted_assessment_ids": [
+    "0f2b015b-7990-41a4-bbfa-f43c1f18f0ab",
+    "37620c04-9216-4c3b-9be4-15183b9ca2f5",
+    "40088f9a-b3ab-48f5-8712-0c7a68dbf783",
+    "96c7e83c-f71f-4929-bc86-d6189a748b71"
+  ],
+  "cross_record_requests_denied": true,
+  "no_header_status": 422,
+  "completed_workflow_read_over_http": {
+    "code": "Z-000",
+    "measurement_id": 1609,
+    "reevaluation_id": "9de8bf20-a2f4-4fc6-80ba-8ae2e26ded80",
+    "certainty": "confirmed_finding",
+    "previous_assessment_id": "74a655ab-c05a-41ce-9024-55a195032e6b",
+    "status": 200,
+    "other_record_status": 404
+  }
+}
