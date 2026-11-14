@@ -22,6 +22,9 @@ import { bodySites, cameraEase, cameraTargets, CAMERA_DURATION_MS } from './anat
 import type { BodyMarker } from './lib';
 import type { Status } from './types';
 
+/** Visual theme: 'light' porcelain studio or 'dark' mission-control hologram. */
+export type Theme = 'light' | 'dark';
+
 export interface LayersState {
   skin: boolean;
   muscles: boolean;
@@ -42,6 +45,7 @@ interface Props {
   isolate?: boolean;
   /** false: alert sites keep their soft glow but no callout labels are drawn. */
   labels?: boolean;
+  theme?: Theme;
 }
 interface MeshInfo {
   mesh: Mesh;
@@ -117,7 +121,7 @@ interface Look {
   /** Light-emitting glass: added to the dark backdrop instead of covering it. */
   additive?: boolean;
 }
-const ORGAN: Omit<Look, 'color'> = {
+const ORGAN_DARK: Omit<Look, 'color'> = {
   roughness: 0.4,
   core: 0.7,
   power: 2,
@@ -128,7 +132,7 @@ const ORGAN: Omit<Look, 'color'> = {
  * Hologram palette for the dark theme: skin, muscle, tendon and bone are additive glass
  * (mostly rim light), organs stay solid enough to read, and the selected system glows warm.
  */
-const LOOKS: Record<string, Look> = {
+const LOOKS_DARK: Record<string, Look> = {
   skin: {
     color: '#1b2a3a',
     roughness: 0.3,
@@ -166,18 +170,76 @@ const LOOKS: Record<string, Look> = {
     rimStrength: 0.45,
     additive: true,
   },
-  lung: { ...ORGAN, color: '#3d5266', core: 0.22, power: 1.4, rimStrength: 0.5 },
-  airway: { ...ORGAN, color: '#4d6174' },
-  digestive: { ...ORGAN, color: '#3f5063', core: 0.45 },
-  liver: { ...ORGAN, color: '#45505f', core: 0.5 },
-  viscera: { ...ORGAN, color: '#415264', core: 0.45 },
-  kidney: { ...ORGAN, color: '#4a4f5e' },
-  brain: { ...ORGAN, color: '#55677a' },
-  eye: { ...ORGAN, color: '#7d8fa3' },
-  cardiac: { ...ORGAN, color: '#d2452f', core: 0.97, rim: '#ffb59f', rimStrength: 0.5 },
-  cardiac_artery: { ...ORGAN, color: '#de4c34', core: 0.97, rim: '#ffb59f', rimStrength: 0.5 },
-  cardiac_vein: { ...ORGAN, color: '#b24a45', core: 0.97, rim: '#ffb59f', rimStrength: 0.5 },
+  lung: { ...ORGAN_DARK, color: '#3d5266', core: 0.22, power: 1.4, rimStrength: 0.5 },
+  airway: { ...ORGAN_DARK, color: '#4d6174' },
+  digestive: { ...ORGAN_DARK, color: '#3f5063', core: 0.45 },
+  liver: { ...ORGAN_DARK, color: '#45505f', core: 0.5 },
+  viscera: { ...ORGAN_DARK, color: '#415264', core: 0.45 },
+  kidney: { ...ORGAN_DARK, color: '#4a4f5e' },
+  brain: { ...ORGAN_DARK, color: '#55677a' },
+  eye: { ...ORGAN_DARK, color: '#7d8fa3' },
+  cardiac: { ...ORGAN_DARK, color: '#d2452f', core: 0.97, rim: '#ffb59f', rimStrength: 0.5 },
+  cardiac_artery: { ...ORGAN_DARK, color: '#de4c34', core: 0.97, rim: '#ffb59f', rimStrength: 0.5 },
+  cardiac_vein: { ...ORGAN_DARK, color: '#b24a45', core: 0.97, rim: '#ffb59f', rimStrength: 0.5 },
 };
+const ORGAN_LIGHT: Omit<Look, 'color'> = {
+  roughness: 0.42,
+  core: 0.88,
+  power: 2.2,
+  rim: '#ffffff',
+  rimStrength: 0.18,
+};
+/** Porcelain studio palette: frosted white tissue, ivory bone, red only where blood is. */
+const LOOKS_LIGHT: Record<string, Look> = {
+  skin: {
+    color: '#e4dfdb',
+    roughness: 0.36,
+    core: 0.18,
+    headCore: 1,
+    power: 2.1,
+    rim: '#ffffff',
+    rimStrength: 0.55,
+  },
+  muscle: {
+    color: '#d3c6be',
+    roughness: 0.4,
+    core: 0.72,
+    power: 1.5,
+    rim: '#fbf4f0',
+    rimStrength: 0.24,
+  },
+  tendon: {
+    color: '#e6ded6',
+    roughness: 0.34,
+    core: 0.6,
+    power: 1.5,
+    rim: '#ffffff',
+    rimStrength: 0.2,
+  },
+  skeleton: {
+    color: '#f1ece3',
+    roughness: 0.55,
+    core: 0.95,
+    power: 2.4,
+    rim: '#ffffff',
+    rimStrength: 0.14,
+  },
+  lung: { ...ORGAN_LIGHT, color: '#d8d3d0', core: 0.45, power: 1.4, rimStrength: 0.32 },
+  airway: { ...ORGAN_LIGHT, color: '#e7e0da' },
+  digestive: { ...ORGAN_LIGHT, color: '#ddd5cf' },
+  liver: { ...ORGAN_LIGHT, color: '#d3c7c0' },
+  viscera: { ...ORGAN_LIGHT, color: '#ddd4ce' },
+  kidney: { ...ORGAN_LIGHT, color: '#d8c9c2' },
+  brain: { ...ORGAN_LIGHT, color: '#e8e0dc' },
+  eye: { ...ORGAN_LIGHT, color: '#f4f1eb' },
+  cardiac: { ...ORGAN_LIGHT, color: '#c94636', core: 0.97, rim: '#ffd9cf' },
+  cardiac_artery: { ...ORGAN_LIGHT, color: '#cf4e3e', core: 0.97, rim: '#ffd9cf' },
+  cardiac_vein: { ...ORGAN_LIGHT, color: '#b6574f', core: 0.97, rim: '#ffd9cf' },
+};
+const THEMES = {
+  light: { looks: LOOKS_LIGHT, organ: ORGAN_LIGHT, environment: 0.42, glowSelected: false },
+  dark: { looks: LOOKS_DARK, organ: ORGAN_DARK, environment: 0.3, glowSelected: true },
+} as const;
 const SELECTED_GLOW = new Color('#ff4a2e');
 const BLACK = new Color('#000000');
 const ALERT_COLOR = new Color('#de3b2c');
@@ -221,8 +283,8 @@ diffuseColor.a *= mix(aegisCoreHere, 1.0, aegisF);
 diffuseColor.a = max(diffuseColor.a, opacity * aegisOwn * 0.92);
 #include <opaque_fragment>`;
 
-function materialFor(tissue: string, region: string, spots: SpotUniforms) {
-  const look = LOOKS[tissue] ?? { ...ORGAN, color: '#d2b3a2' };
+function materialFor(tissue: string, region: string, spots: SpotUniforms, theme: Theme) {
+  const look = THEMES[theme].looks[tissue] ?? { ...THEMES[theme].organ, color: '#d2b3a2' };
   const material = new MeshStandardMaterial({
     color: look.color,
     roughness: look.roughness,
@@ -231,7 +293,7 @@ function materialFor(tissue: string, region: string, spots: SpotUniforms) {
     opacity: 1,
     depthWrite: false,
     blending: look.additive ? AdditiveBlending : NormalBlending,
-    envMapIntensity: LOOKS[tissue]?.additive ? 0.35 : 0.6,
+    envMapIntensity: theme === 'dark' ? (look.additive ? 0.35 : 0.6) : tissue === 'skin' ? 1 : 0.75,
   });
   const uniforms = {
     aegisCore: { value: look.core },
@@ -260,7 +322,7 @@ function materialFor(tissue: string, region: string, spots: SpotUniforms) {
   return material;
 }
 
-function prepareScene(source: Group, interactive = true) {
+function prepareScene(source: Group, interactive = true, theme: Theme = 'light') {
   const scene = source.clone(true);
   const parts: MeshInfo[] = [];
   const spots = createSpots();
@@ -272,7 +334,7 @@ function prepareScene(source: Group, interactive = true) {
       zone: string;
     };
     if (!region) return;
-    const material = materialFor(tissue, region, spots);
+    const material = materialFor(tissue, region, spots, theme);
     object.material = material;
     if (interactive && region !== 'skin' && !object.geometry.boundsTree)
       computeBoundsTree.call(object.geometry, { maxLeafTris: 32 });
@@ -304,7 +366,7 @@ type ViewMode = 'overview' | 'zoom' | 'isolate';
  * Target opacity per piece. Overview reads as a visible porcelain person; zoom keeps that
  * context and only clears the way to the selected system; isolate fades everything else.
  */
-function opacityFor(part: MeshInfo, selected: string, mode: ViewMode) {
+function opacityFor(part: MeshInfo, selected: string, mode: ViewMode, theme: Theme) {
   const { region, tissue } = part;
   const active = region === selected;
   if (mode === 'isolate') {
@@ -316,6 +378,14 @@ function opacityFor(part: MeshInfo, selected: string, mode: ViewMode) {
     return active ? 0.98 : 0.16;
   }
   const zoom = mode === 'zoom';
+  if (theme === 'light') {
+    if (region === 'skin') return zoom ? 0.5 : 0.64;
+    if (tissue === 'tendon') return active ? 0.85 : zoom ? 0.3 : 0.45;
+    if (region === 'muscles') return active ? 0.94 : zoom ? 0.46 : 0.72;
+    if (region === 'skeleton') return active ? 0.98 : 0.9;
+    if (tissue === 'lung') return active ? 0.86 : zoom ? 0.42 : 0.5;
+    return active ? 0.98 : 0.86;
+  }
   if (region === 'skin') return zoom ? 0.75 : 0.9;
   if (tissue === 'tendon') return active ? 0.85 : 0.35;
   if (region === 'muscles') return active ? 0.92 : zoom ? 0.35 : 0.45;
@@ -333,6 +403,7 @@ function Anatomy({
   selected,
   focused,
   isolate = true,
+  theme = 'light',
   onSelect,
   layers,
   onReady,
@@ -344,6 +415,7 @@ function Anatomy({
   selected: string;
   focused: boolean;
   isolate?: boolean;
+  theme?: Theme;
   onSelect: (id: string) => void;
   layers: LayersState;
   onReady: () => void;
@@ -353,7 +425,7 @@ function Anatomy({
   visible?: boolean;
 }) {
   const { scene: original } = useGLTF(url, false, true);
-  const { scene, parts, spots } = useMemo(() => prepareScene(original), [original]);
+  const { scene, parts, spots } = useMemo(() => prepareScene(original, true, theme), [original, theme]);
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
     onReady();
@@ -374,21 +446,21 @@ function Anatomy({
   useEffect(() => {
     for (const part of parts) {
       part.mesh.visible = visible && layers[layerOf(part)] && part.region !== hiddenRegion;
-      const target = opacityFor(part, selected, !focused ? 'overview' : isolate ? 'isolate' : 'zoom');
+      const target = opacityFor(part, selected, !focused ? 'overview' : isolate ? 'isolate' : 'zoom', theme);
       part.material.userData.targetOpacity = target;
       if (!part.material.userData.initialized) {
         part.material.opacity = target;
         part.material.userData.initialized = true;
       }
       const look = part.material.userData.look as Look;
-      const glowing = part.region === selected && part.region !== 'skin';
+      const glowing = THEMES[theme].glowSelected && part.region === selected && part.region !== 'skin';
       part.material.blending = look.additive && !glowing ? AdditiveBlending : NormalBlending;
       part.material.emissive.copy(glowing ? SELECTED_GLOW : BLACK);
       part.material.emissiveIntensity = glowing ? 0.55 : 0;
       part.material.depthWrite = target >= 0.95 && look.core > 0.9;
     }
     invalidate();
-  }, [parts, selected, focused, isolate, layers, invalidate, hiddenRegion, visible]);
+  }, [parts, selected, focused, isolate, theme, layers, invalidate, hiddenRegion, visible]);
   useFrame((_, delta) => {
     const alpha = 1 - Math.exp(-delta * 9);
     let moving = false;
@@ -504,14 +576,14 @@ function CameraDirector({
 }
 
 /** Local studio environment (procedural room → PMREM). No HDR file, no network. */
-function StudioEnvironment() {
+function StudioEnvironment({ intensity }: { intensity: number }) {
   const { gl, scene, invalidate } = useThree();
   useEffect(() => {
     const generator = new PMREMGenerator(gl);
     const room = new RoomEnvironment();
     const texture = generator.fromScene(room, 0.04).texture;
     scene.environment = texture;
-    scene.environmentIntensity = 0.3;
+    scene.environmentIntensity = intensity;
     invalidate();
     return () => {
       scene.environment = null;
@@ -519,18 +591,30 @@ function StudioEnvironment() {
       room.dispose();
       generator.dispose();
     };
-  }, [gl, scene, invalidate]);
+  }, [gl, scene, invalidate, intensity]);
   return null;
 }
 
-function Studio() {
+function Studio({ theme = 'light' }: { theme?: Theme }) {
   return (
     <>
-      <StudioEnvironment />
-      <hemisphereLight args={['#dfeaff', '#1a2233', 0.35]} />
-      <directionalLight position={[2.2, 3.4, 3.6]} intensity={1.2} color="#f4f8ff" />
+      <StudioEnvironment intensity={THEMES[theme].environment} />
+      {theme === 'dark' ? (
+        <hemisphereLight args={['#dfeaff', '#1a2233', 0.35]} />
+      ) : (
+        <hemisphereLight args={['#fffaf3', '#8f8276', 0.4]} />
+      )}
+      {theme === 'dark' ? (
+        <directionalLight position={[2.2, 3.4, 3.6]} intensity={1.2} color="#f4f8ff" />
+      ) : (
+        <directionalLight position={[2.2, 3.4, 3.6]} intensity={1.55} color="#fff6ea" />
+      )}
       <directionalLight position={[-3, 1.8, 1.2]} intensity={0.45} color="#eef1ff" />
-      <directionalLight position={[0.4, 2.6, -3.2]} intensity={1.6} color="#9fd0ff" />
+      {theme === 'dark' ? (
+        <directionalLight position={[0.4, 2.6, -3.2]} intensity={1.6} color="#9fd0ff" />
+      ) : (
+        <directionalLight position={[0.4, 2.6, -3.2]} intensity={1.25} color="#fffaf4" />
+      )}
     </>
   );
 }
@@ -708,7 +792,7 @@ export default function AnatomyViewer(props: Props) {
               }
             }}
           >
-            <Studio />
+            <Studio theme={props.theme} />
             <Anatomy
               {...props}
               markers={markers}

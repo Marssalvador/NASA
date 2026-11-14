@@ -38,9 +38,11 @@ test('real atlas rotates in overview; a system with media opens it directly over
   await expect(page.locator('.stage-media')).toHaveAttribute('data-shown', 'true');
   await expect(page.locator('.anatomy-stage .system-media-current')).toHaveAttribute(
     'src',
-    '/media/systems/heart.webp',
+    '/media/systems/heart-loop.webp',
   );
-  await expect(page.locator('.system-media-caption')).toHaveCount(0);
+  // Light theme (default for a light system preference): the Sunra heart loop, without captions.
+  await expect(page.locator('.stage-media video')).toHaveAttribute('src', '/media/systems/heart.mp4');
+  await expect(page.locator('.system-media-caption')).toHaveText('');
   await expect(page.locator('.anatomy-marker')).toHaveCount(0);
   await expect(page.locator('.anatomy-mission-context')).toBeHidden();
   await expect(page.getByRole('region', { name: 'Interpretación del sistema' })).toBeVisible();
@@ -173,9 +175,7 @@ test('no callouts on the body; the sensing ladder explains the next acquisition'
   await expect(page.locator('.anatomy-organ-preview')).toHaveCount(0);
   await page.getByRole('button', { name: 'Óseo', exact: true }).click();
   await expect(page.locator('.anatomy-system-heading h1')).toHaveText('Óseo');
-  // No section image yet for this system: it falls back to the 3D camera zoom.
-  await expect(page.locator('.stage-media')).toHaveCount(0);
-  await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-camera-mode', 'skeleton');
+  await expect(page.locator('.anatomy-stage')).toHaveClass(/has-media/);
   await expect(page.locator('.anatomy-marker')).toHaveCount(0);
   const route = page.getByRole('region', { name: 'Ruta Resorción ósea' });
   await expect(route).toContainText('Ruta demostrativa');
@@ -187,4 +187,27 @@ test('no callouts on the body; the sensing ladder explains the next acquisition'
   await subject.selectOption('crew-01');
   await expect(page.locator('.anatomy-overall-status')).toHaveText('Sin desviaciones detectadas');
   await expect(page.locator('.anatomy-marker')).toHaveCount(0);
+});
+
+test('light and dark themes switch, persist and keep their own section media', async ({ page }) => {
+  await open(page);
+  const app = page.locator('.anatomy-app');
+  await expect(app).toHaveAttribute('data-theme', 'light');
+  await page.getByRole('button', { name: 'Cambiar a tema oscuro', exact: true }).click();
+  await expect(app).toHaveAttribute('data-theme', 'dark');
+  await page.reload();
+  await expect(page.locator('.anatomy-app')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('.anatomy-canvas[data-ready="true"]')).toBeVisible({ timeout: 30000 });
+  await page.getByRole('button', { name: 'Respiratorio', exact: true }).click();
+  await expect(page.locator('.anatomy-stage .system-media-current')).toHaveAttribute(
+    'src',
+    '/media/systems-dark/lungs.webp',
+  );
+  await page.getByRole('button', { name: 'Vista general', exact: true }).click();
+  await page.getByRole('button', { name: 'Cambiar a tema claro', exact: true }).click();
+  await expect(page.locator('.anatomy-app')).toHaveAttribute('data-theme', 'light');
+  // No light still for this system: it falls back to the 3D camera zoom.
+  await page.getByRole('button', { name: 'Respiratorio', exact: true }).click();
+  await expect(page.locator('.stage-media')).toHaveCount(0);
+  await expect(page.locator('.anatomy-canvas')).toHaveAttribute('data-camera-mode', 'lungs');
 });

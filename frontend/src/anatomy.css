@@ -2308,8 +2308,8 @@ button.sensing-chip:hover {
 }
 .stage-media .system-media > img,
 .stage-media .system-media-video {
-  object-fit: contain;
-  object-position: center;
+  object-fit: cover;
+  object-position: center 42%;
 }
 .stage-media .system-media-caption {
   -webkit-mask-image: none;
@@ -2337,7 +2337,7 @@ button.sensing-chip:hover {
  * Mission-control dark theme: deep space, Earth at night below, luminous glass anatomy.
  * One warm accent (the organ glow) carries alerts; everything else is cool and quiet.
  * ===================================================================================== */
-.anatomy-app {
+.anatomy-app[data-theme='dark'] {
   --space: #04060b;
   --ink: #eef2f7;
   --ink-2: #b4bdca;
@@ -2359,85 +2359,85 @@ button.sensing-chip:hover {
     var(--space);
   color-scheme: dark;
 }
-.anatomy-app :focus-visible {
+.anatomy-app[data-theme='dark'] :focus-visible {
   outline-color: #9fc7ff;
 }
-.anatomy-app .anatomy-wordmark {
+.anatomy-app[data-theme='dark'] .anatomy-wordmark {
   color: #f5f8fc !important;
 }
-.anatomy-app .anatomy-tagline {
+.anatomy-app[data-theme='dark'] .anatomy-tagline {
   color: var(--ink-3);
 }
-.anatomy-app .anatomy-identity-divider {
+.anatomy-app[data-theme='dark'] .anatomy-identity-divider {
   background: var(--hairline-strong);
 }
-.anatomy-app .anatomy-astronaut {
+.anatomy-app[data-theme='dark'] .anatomy-astronaut {
   color: var(--ink-2);
 }
-.anatomy-app .anatomy-astronaut select,
-.anatomy-app .anatomy-profile-button {
+.anatomy-app[data-theme='dark'] .anatomy-astronaut select,
+.anatomy-app[data-theme='dark'] .anatomy-profile-button {
   background: rgba(255, 255, 255, 0.05);
   color: var(--ink);
   border-color: var(--hairline-strong);
   box-shadow: none;
 }
-.anatomy-app .anatomy-astronaut select option {
+.anatomy-app[data-theme='dark'] .anatomy-astronaut select option {
   background: #0b111d;
   color: var(--ink);
 }
-.anatomy-app .anatomy-astronaut label > svg {
+.anatomy-app[data-theme='dark'] .anatomy-astronaut label > svg {
   color: var(--ink-2);
 }
 
 /* Navigation */
-.anatomy-app .anatomy-system {
+.anatomy-app[data-theme='dark'] .anatomy-system {
   color: var(--ink-2);
 }
-.anatomy-app .anatomy-system:hover {
+.anatomy-app[data-theme='dark'] .anatomy-system:hover {
   background: rgba(255, 255, 255, 0.04);
   color: var(--ink);
 }
-.anatomy-app .anatomy-system.selected {
+.anatomy-app[data-theme='dark'] .anatomy-system.selected {
   background: var(--alert-soft);
   color: #ffe1db;
 }
-.anatomy-app .anatomy-system.selected > svg {
+.anatomy-app[data-theme='dark'] .anatomy-system.selected > svg {
   color: var(--alert);
 }
-.anatomy-app .anatomy-small-label,
-.anatomy-app .anatomy-demo-label,
-.anatomy-app .anatomy-replay > span {
+.anatomy-app[data-theme='dark'] .anatomy-small-label,
+.anatomy-app[data-theme='dark'] .anatomy-demo-label,
+.anatomy-app[data-theme='dark'] .anatomy-replay > span {
   color: var(--ink-4);
 }
-.anatomy-app .anatomy-mission-context > strong {
+.anatomy-app[data-theme='dark'] .anatomy-mission-context > strong {
   color: var(--ink);
 }
-.anatomy-app .anatomy-mission-context > span {
+.anatomy-app[data-theme='dark'] .anatomy-mission-context > span {
   color: var(--ink-3);
 }
-.anatomy-app .anatomy-overall-status {
+.anatomy-app[data-theme='dark'] .anatomy-overall-status {
   color: var(--ink-2);
 }
-.anatomy-app .anatomy-overall-status.review,
-.anatomy-app .anatomy-overall-status.emergency {
+.anatomy-app[data-theme='dark'] .anatomy-overall-status.review,
+.anatomy-app[data-theme='dark'] .anatomy-overall-status.emergency {
   color: var(--alert);
 }
-.anatomy-app .anatomy-replay,
-.anatomy-app .anatomy-replay button {
+.anatomy-app[data-theme='dark'] .anatomy-replay,
+.anatomy-app[data-theme='dark'] .anatomy-replay button {
   color: var(--ink-2);
 }
-.anatomy-app .anatomy-replay input {
+.anatomy-app[data-theme='dark'] .anatomy-replay input {
   accent-color: var(--alert);
 }
-.anatomy-app .anatomy-data-menu > summary {
+.anatomy-app[data-theme='dark'] .anatomy-data-menu > summary {
   color: var(--ink-3);
 }
-.anatomy-app .anatomy-data-menu > summary:hover,
-.anatomy-app .anatomy-data-menu[open] > summary {
+.anatomy-app[data-theme='dark'] .anatomy-data-menu > summary:hover,
+.anatomy-app[data-theme='dark'] .anatomy-data-menu[open] > summary {
   color: var(--ink);
 }
-.anatomy-app .anatomy-data-menu > div,
-.anatomy-app .anatomy-layers {
+.anatomy-app[data-theme='dark'] .anatomy-data-menu > div,
+.anatomy-app[data-theme='dark'] .anatomy-layers {
   background: var(--glass-raised);
   border-color: var(--hairline);
   box-shadow:
@@ -2446,232 +2446,232 @@ button.sensing-chip:hover {
   backdrop-filter: blur(14px);
   color: var(--ink-2);
 }
-.anatomy-app .anatomy-data-menu > div > button {
+.anatomy-app[data-theme='dark'] .anatomy-data-menu > div > button {
   color: var(--ink);
 }
-.anatomy-app .anatomy-data-menu > div > button:hover {
+.anatomy-app[data-theme='dark'] .anatomy-data-menu > div > button:hover {
   background: rgba(255, 255, 255, 0.06);
 }
-.anatomy-app .anatomy-layers label {
+.anatomy-app[data-theme='dark'] .anatomy-layers label {
   color: var(--ink-2);
 }
-.anatomy-app .anatomy-layers input {
+.anatomy-app[data-theme='dark'] .anatomy-layers input {
   accent-color: var(--alert);
 }
-.anatomy-app .anatomy-back {
+.anatomy-app[data-theme='dark'] .anatomy-back {
   color: var(--ink);
 }
-.anatomy-app .anatomy-back > span {
+.anatomy-app[data-theme='dark'] .anatomy-back > span {
   background: rgba(255, 255, 255, 0.05);
   border-color: var(--hairline-strong);
 }
 
 /* Stage */
-.anatomy-app .anatomy-ground-shadow {
+.anatomy-app[data-theme='dark'] .anatomy-ground-shadow {
   background: radial-gradient(ellipse, rgba(140, 180, 255, 0.14), transparent 70%);
 }
-.anatomy-app .anatomy-view-controls {
+.anatomy-app[data-theme='dark'] .anatomy-view-controls {
   background: rgba(10, 14, 24, 0.6);
   border-color: var(--hairline);
   box-shadow: none;
 }
-.anatomy-app .anatomy-view-controls button {
+.anatomy-app[data-theme='dark'] .anatomy-view-controls button {
   color: var(--ink-3);
 }
-.anatomy-app .anatomy-view-controls button:hover {
+.anatomy-app[data-theme='dark'] .anatomy-view-controls button:hover {
   background: rgba(255, 255, 255, 0.08);
   color: var(--ink);
 }
-.anatomy-app .anatomy-gesture,
-.anatomy-app .anatomy-footer,
-.anatomy-app .anatomy-footer > button {
+.anatomy-app[data-theme='dark'] .anatomy-gesture,
+.anatomy-app[data-theme='dark'] .anatomy-footer,
+.anatomy-app[data-theme='dark'] .anatomy-footer > button {
   color: var(--ink-4);
 }
-.anatomy-app .anatomy-loader,
-.anatomy-app .anatomy-load-error {
+.anatomy-app[data-theme='dark'] .anatomy-loader,
+.anatomy-app[data-theme='dark'] .anatomy-load-error {
   color: var(--ink-2);
 }
-.anatomy-app .system-media-caption {
+.anatomy-app[data-theme='dark'] .system-media-caption {
   background: rgba(4, 6, 11, 0.6);
   color: var(--ink-3);
 }
 
 /* Inspector */
-.anatomy-app .anatomy-inspector {
+.anatomy-app[data-theme='dark'] .anatomy-inspector {
   border-left-color: var(--hairline);
   scrollbar-color: rgba(170, 190, 220, 0.25) transparent;
 }
-.anatomy-app .anatomy-system-heading h1 {
+.anatomy-app[data-theme='dark'] .anatomy-system-heading h1 {
   color: #f5f8fc;
 }
-.anatomy-app .anatomy-system-heading p {
+.anatomy-app[data-theme='dark'] .anatomy-system-heading p {
   color: var(--ink-3);
 }
-.anatomy-app .anatomy-system-emblem {
+.anatomy-app[data-theme='dark'] .anatomy-system-emblem {
   background: var(--alert-soft);
   color: var(--alert);
 }
-.anatomy-app .anatomy-tabs {
+.anatomy-app[data-theme='dark'] .anatomy-tabs {
   border-bottom-color: var(--hairline);
 }
-.anatomy-app .anatomy-tabs button {
+.anatomy-app[data-theme='dark'] .anatomy-tabs button {
   color: var(--ink-3);
 }
-.anatomy-app .anatomy-tabs button.selected {
+.anatomy-app[data-theme='dark'] .anatomy-tabs button.selected {
   color: var(--ink);
 }
-.anatomy-app .anatomy-tabs .selected:after {
+.anatomy-app[data-theme='dark'] .anatomy-tabs .selected:after {
   background: var(--alert);
 }
-.anatomy-app .anatomy-metric-group > h3 {
+.anatomy-app[data-theme='dark'] .anatomy-metric-group > h3 {
   color: var(--ink-4);
 }
-.anatomy-app .anatomy-metric {
+.anatomy-app[data-theme='dark'] .anatomy-metric {
   color: var(--ink);
   border-bottom-color: var(--hairline);
 }
-.anatomy-app .anatomy-metric:hover {
+.anatomy-app[data-theme='dark'] .anatomy-metric:hover {
   background: rgba(255, 255, 255, 0.03);
 }
-.anatomy-app .anatomy-metric-icon {
+.anatomy-app[data-theme='dark'] .anatomy-metric-icon {
   color: var(--ink-4);
 }
-.anatomy-app .anatomy-metric-reading {
+.anatomy-app[data-theme='dark'] .anatomy-metric-reading {
   color: #f5f8fc;
 }
-.anatomy-app .anatomy-metric-caption {
+.anatomy-app[data-theme='dark'] .anatomy-metric-caption {
   color: var(--ink-4);
 }
-.anatomy-app .anatomy-metric.dormant .anatomy-metric-name,
-.anatomy-app .anatomy-metric.dormant .anatomy-metric-reading {
+.anatomy-app[data-theme='dark'] .anatomy-metric.dormant .anatomy-metric-name,
+.anatomy-app[data-theme='dark'] .anatomy-metric.dormant .anatomy-metric-reading {
   color: var(--ink-4);
 }
-.anatomy-app .anatomy-deviation {
+.anatomy-app[data-theme='dark'] .anatomy-deviation {
   color: var(--alert);
 }
-.anatomy-app .anatomy-empty,
-.anatomy-app .anatomy-detail > p,
-.anatomy-app .anatomy-trend-footnote {
+.anatomy-app[data-theme='dark'] .anatomy-empty,
+.anatomy-app[data-theme='dark'] .anatomy-detail > p,
+.anatomy-app[data-theme='dark'] .anatomy-trend-footnote {
   color: var(--ink-3);
 }
-.anatomy-app .anatomy-detail > div > button {
+.anatomy-app[data-theme='dark'] .anatomy-detail > div > button {
   color: var(--ink);
   border-color: var(--hairline);
 }
-.anatomy-app .anatomy-outline-button {
+.anatomy-app[data-theme='dark'] .anatomy-outline-button {
   color: var(--ink-2);
   border-color: var(--hairline-strong);
 }
 
 /* Assessment and sensing ladder */
-.anatomy-app .system-assessment > div {
+.anatomy-app[data-theme='dark'] .system-assessment > div {
   background: rgba(255, 255, 255, 0.035);
   box-shadow: inset 0 0 0 1px var(--hairline);
   color: var(--ink-3);
 }
-.anatomy-app .system-assessment > div:first-child {
+.anatomy-app[data-theme='dark'] .system-assessment > div:first-child {
   background: var(--alert-soft);
   box-shadow: inset 0 0 0 1px rgba(255, 106, 85, 0.22);
 }
-.anatomy-app .system-assessment h2 {
+.anatomy-app[data-theme='dark'] .system-assessment h2 {
   color: var(--ink);
 }
-.anatomy-app .system-assessment p,
-.anatomy-app .system-assessment summary {
+.anatomy-app[data-theme='dark'] .system-assessment p,
+.anatomy-app[data-theme='dark'] .system-assessment summary {
   color: var(--ink-2);
 }
-.anatomy-app .system-assessment small {
+.anatomy-app[data-theme='dark'] .system-assessment small {
   color: var(--ink-4);
 }
-.anatomy-app .system-assessment svg {
+.anatomy-app[data-theme='dark'] .system-assessment svg {
   color: var(--alert);
 }
-.anatomy-app .sensing-route {
+.anatomy-app[data-theme='dark'] .sensing-route {
   background: rgba(255, 255, 255, 0.03);
   box-shadow: inset 0 0 0 1px var(--hairline);
 }
-.anatomy-app .sensing-route.stage-review,
-.anatomy-app .sensing-route.stage-requested {
+.anatomy-app[data-theme='dark'] .sensing-route.stage-review,
+.anatomy-app[data-theme='dark'] .sensing-route.stage-requested {
   background: rgba(255, 106, 85, 0.05);
   box-shadow: inset 0 0 0 1px rgba(255, 106, 85, 0.2);
 }
-.anatomy-app .sensing-route h2 {
+.anatomy-app[data-theme='dark'] .sensing-route h2 {
   color: var(--ink);
 }
-.anatomy-app .sensing-route li p {
+.anatomy-app[data-theme='dark'] .sensing-route li p {
   color: var(--ink-2);
 }
-.anatomy-app .sensing-step,
-.anatomy-app .sensing-evidence {
+.anatomy-app[data-theme='dark'] .sensing-step,
+.anatomy-app[data-theme='dark'] .sensing-evidence {
   color: var(--ink-4);
 }
-.anatomy-app .sensing-evidence {
+.anatomy-app[data-theme='dark'] .sensing-evidence {
   border-top-color: var(--hairline);
 }
-.anatomy-app .sensing-route li::before {
+.anatomy-app[data-theme='dark'] .sensing-route li::before {
   background: var(--space);
   box-shadow: inset 0 0 0 1.5px var(--ink-4);
 }
-.anatomy-app .sensing-route li::after {
+.anatomy-app[data-theme='dark'] .sensing-route li::after {
   background: var(--hairline-strong);
 }
-.anatomy-app .sensing-route li.is-hit::before {
+.anatomy-app[data-theme='dark'] .sensing-route li.is-hit::before {
   background: var(--alert);
   box-shadow: 0 0 0 3px rgba(255, 106, 85, 0.2);
 }
-.anatomy-app .sensing-badge {
+.anatomy-app[data-theme='dark'] .sensing-badge {
   background: rgba(255, 255, 255, 0.07);
   color: var(--ink-2);
 }
-.anatomy-app .sensing-chip {
+.anatomy-app[data-theme='dark'] .sensing-chip {
   background: rgba(255, 255, 255, 0.04);
   color: var(--ink);
   box-shadow: inset 0 0 0 1px var(--hairline-strong);
 }
-.anatomy-app .sensing-chip em {
+.anatomy-app[data-theme='dark'] .sensing-chip em {
   color: var(--ink-3);
 }
-.anatomy-app .sensing-chip.hit,
-.anatomy-app .sensing-chip.state-deviates,
-.anatomy-app .sensing-chip.state-requested {
+.anatomy-app[data-theme='dark'] .sensing-chip.hit,
+.anatomy-app[data-theme='dark'] .sensing-chip.state-deviates,
+.anatomy-app[data-theme='dark'] .sensing-chip.state-requested {
   color: #ffb3a6;
   box-shadow: inset 0 0 0 1px rgba(255, 106, 85, 0.4);
 }
-.anatomy-app .sensing-chip.state-requested {
+.anatomy-app[data-theme='dark'] .sensing-chip.state-requested {
   background: repeating-linear-gradient(
     -45deg,
     rgba(255, 106, 85, 0.06) 0 5px,
     transparent 5px 10px
   );
 }
-.anatomy-app .sensing-chip.state-deviates em,
-.anatomy-app .sensing-chip.state-requested em {
+.anatomy-app[data-theme='dark'] .sensing-chip.state-deviates em,
+.anatomy-app[data-theme='dark'] .sensing-chip.state-requested em {
   color: var(--alert);
 }
-.anatomy-app .sensing-chip.planned,
-.anatomy-app .sensing-chip.faint {
+.anatomy-app[data-theme='dark'] .sensing-chip.planned,
+.anatomy-app[data-theme='dark'] .sensing-chip.faint {
   color: var(--ink-3);
   background: transparent;
   outline-color: var(--hairline-strong);
 }
-.anatomy-app .sensing-link,
-.anatomy-app .sensing-summary {
+.anatomy-app[data-theme='dark'] .sensing-link,
+.anatomy-app[data-theme='dark'] .sensing-summary {
   color: var(--ink-3);
 }
-.anatomy-app .sensing-summary {
+.anatomy-app[data-theme='dark'] .sensing-summary {
   box-shadow: inset 0 0 0 1px var(--hairline);
 }
-.anatomy-app .sensing-summary > strong {
+.anatomy-app[data-theme='dark'] .sensing-summary > strong {
   color: var(--ink);
 }
-.anatomy-app .anatomy-emergency,
-.anatomy-app .anatomy-error {
+.anatomy-app[data-theme='dark'] .anatomy-emergency,
+.anatomy-app[data-theme='dark'] .anatomy-error {
   background: rgba(255, 106, 85, 0.1);
   color: #ffc2b8;
   border-color: rgba(255, 106, 85, 0.35);
 }
 
-/* Section entry: the image is simply there, like a page transition — no fly-through. */
+/* Section entry for both themes: the image is simply there, like a page transition. */
 .stage-media {
   transform: none;
   transition: opacity 380ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -2685,26 +2685,55 @@ button.sensing-chip:hover {
 .anatomy-stage {
   transition: none;
 }
-
-/* Section media floats in space: screen blending turns the image's black into the backdrop. */
-.anatomy-stage.has-media {
-  mix-blend-mode: screen;
+.anatomy-canvas {
+  transition: opacity 260ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .anatomy-stage.has-media .anatomy-canvas {
   opacity: 0;
   pointer-events: none;
 }
-.anatomy-canvas {
-  transition: opacity 260ms cubic-bezier(0.23, 1, 0.32, 1);
+
+/* Dark theme: section media floats in space; screen blending dissolves the image's black. */
+.anatomy-app[data-theme='dark'] .anatomy-stage.has-media {
+  mix-blend-mode: screen;
 }
-.stage-media {
+.anatomy-app[data-theme='dark'] .stage-media {
   -webkit-mask-image: none;
   mask-image: none;
 }
-.stage-media .system-media {
+.anatomy-app[data-theme='dark'] .stage-media .system-media {
   isolation: auto;
 }
-.stage-media .system-media > img {
+.anatomy-app[data-theme='dark'] .stage-media .system-media > img,
+.anatomy-app[data-theme='dark'] .stage-media .system-media-video {
+  object-fit: contain;
+  object-position: center;
   -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 52%, transparent 100%);
   mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 52%, transparent 100%);
+}
+
+/* Theme switch */
+.anatomy-theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: #6e655d;
+  background: #fff8;
+  box-shadow: inset 0 0 0 1px #ddd3c9;
+  transition: background 150ms ease, color 150ms ease;
+}
+.anatomy-theme-toggle:hover {
+  color: #2b241f;
+  background: #fff;
+}
+.anatomy-app[data-theme='dark'] .anatomy-theme-toggle {
+  color: var(--ink-2);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+}
+.anatomy-app[data-theme='dark'] .anatomy-theme-toggle:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.1);
 }

@@ -43,3 +43,7 @@ Por decisión del usuario la interfaz pasa a un tema oscuro: fondo espacial con 
 Se retiraron el vídeo del corazón (de fondo claro), el rótulo de ilustración generada, el aviso «Variación detectada», la imagen del panel derecho, la nota de color y las etiquetas sobre el cuerpo (se conserva el brillo suave en los sitios con revisión).
 
 **Pendiente:** Óseo y Metabólico no tienen foto: la cuenta de Sunra se quedó sin saldo (cada imagen requiere una preautorización de 0,65 USD). Mientras tanto usan el zoom de cámara del atlas 3D. Para completarlas: `node frontend/scripts/generate-section-video.mjs image skeleton` (y `metabolic`), codificar a WebP en `public/media/systems/` y añadir la entrada en `sectionMedia.ts`.
+
+## Dos temas (ronda 7)
+
+El selector de la cabecera alterna entre **claro** (estudio porcelana: atlas opaco cálido, fotos claras y el bucle de vídeo del corazón) y **oscuro** (espacio con la Tierra al fondo, atlas holográfico aditivo, fotos de Sunra sobre negro con fusión «screen»). La elección se guarda en `localStorage` (`aegis.theme`); sin elección previa se usa `prefers-color-scheme`. Cada tema tiene su propio conjunto de medios en `sectionMediaByTheme` (`public/media/systems/` y `public/media/systems-dark/`); un sistema sin imagen en el tema activo entra con el zoom 3D. En ambos temas la entrada a una sección con imagen es directa y se mantienen retirados los rótulos de «generado», el aviso de variación, la imagen del panel derecho y las etiquetas sobre el cuerpo.

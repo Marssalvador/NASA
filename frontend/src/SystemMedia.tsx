@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
-import { sectionMedia } from './sectionMedia';
+import { sectionMediaFor } from './sectionMedia';
+import type { Theme } from './sectionMedia';
 
 /** Decoded stills replace WebGL in a system view; videos are opt-in local assets. */
 export default function SystemMedia({
   region,
+  theme = 'light',
   compact = false,
 }: {
   region: string;
+  theme?: Theme;
   compact?: boolean;
 }) {
-  const media = sectionMedia[region]!;
+  const media = sectionMediaFor(region, theme)!;
   const [frame, setFrame] = useState<{ image: string; alt: string } | null>(null);
   const [previous, setPrevious] = useState<typeof frame>(null);
   const [failed, setFailed] = useState(false);

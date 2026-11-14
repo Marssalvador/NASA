@@ -1,27 +1,36 @@
 /** Local assets only. Optional videos must have a seamless loop authored into the file. */
-/** Systems without an entry fall back to the 3D camera zoom on the atlas. */
-export const sectionMedia: Partial<Record<string, { image: string; video?: string; alt: string }>> = {
-  heart: {
-    image: '/media/systems/heart.webp',
-    alt: 'Corazón iluminado dentro de un tórax translúcido',
+export type Theme = 'light' | 'dark';
+export interface SectionMedia {
+  image: string;
+  video?: string;
+  alt: string;
+}
+/**
+ * One art direction per theme. Systems without an entry fall back to the 3D camera zoom.
+ * Light: warm studio stills and the Sunra heart loop. Dark: Sunra glass anatomy on black.
+ */
+export const sectionMediaByTheme: Record<Theme, Partial<Record<string, SectionMedia>>> = {
+  light: {
+    heart: {
+      // Sunra (gpt-image-2 still → Kling v3 loop, same start/end frame), slowed ×2 locally.
+      image: '/media/systems/heart-loop.webp',
+      video: '/media/systems/heart.mp4',
+      alt: 'Corazón latiendo dentro de un tórax translúcido',
+    },
+    kidneys: { image: '/media/systems/kidneys.webp', alt: 'Riñones y vías urinarias' },
+    brain: { image: '/media/systems/brain.webp', alt: 'Encéfalo y tronco cerebral' },
+    skeleton: { image: '/media/systems/skeleton.webp', alt: 'Pelvis, columna y fémures' },
+    metabolic: { image: '/media/systems/metabolic.webp', alt: 'Hígado, páncreas e intestino' },
   },
-  lungs: {
-    image: '/media/systems/lungs.webp',
-    alt: 'Ilustración anatómica de los pulmones y bronquios',
-  },
-  kidneys: {
-    image: '/media/systems/kidneys.webp',
-    alt: 'Ilustración anatómica de los riñones y vías urinarias',
-  },
-  brain: {
-    image: '/media/systems/brain.webp',
-    alt: 'Ilustración anatómica del encéfalo y tronco cerebral',
-  },
-  muscles: {
-    image: '/media/systems/muscles.webp',
-    alt: 'Ilustración anatómica de la musculatura del tronco y muslos',
+  dark: {
+    heart: { image: '/media/systems-dark/heart.webp', alt: 'Corazón iluminado dentro de un tórax translúcido' },
+    lungs: { image: '/media/systems-dark/lungs.webp', alt: 'Pulmones y bronquios' },
+    kidneys: { image: '/media/systems-dark/kidneys.webp', alt: 'Riñones y vías urinarias' },
+    brain: { image: '/media/systems-dark/brain.webp', alt: 'Encéfalo y tronco cerebral' },
+    muscles: { image: '/media/systems-dark/muscles.webp', alt: 'Musculatura del tronco y muslos' },
   },
 };
+export const sectionMediaFor = (region: string, theme: Theme) => sectionMediaByTheme[theme][region];
 
 /** Context from the user's technical brief; these descriptions are not clinical rules. */
 export const monitoringContext: Record<string, string> = {
@@ -41,8 +50,8 @@ export const monitoringContext: Record<string, string> = {
 };
 
 const requested = new Set<string>();
-export function prefetchSection(region: string) {
-  const media = sectionMedia[region];
+export function prefetchSection(region: string, theme: Theme) {
+  const media = sectionMediaFor(region, theme);
   if (!media || requested.has(media.image)) return;
   requested.add(media.image);
   const image = new Image();

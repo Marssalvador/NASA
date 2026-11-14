@@ -18,6 +18,8 @@ import {
   ShieldCheck,
   TriangleAlert,
   Upload,
+  Moon,
+  Sun,
   UserRound,
   X,
 } from 'lucide-react';
@@ -33,11 +35,23 @@ import type { DialogName } from './MissionDialogs';
 import type { LayersState } from './AnatomyViewer';
 import SystemMedia from './SystemMedia';
 import SystemAssessment from './SystemAssessment';
-import { prefetchSection, sectionMedia } from './sectionMedia';
+import { prefetchSection, sectionMediaFor } from './sectionMedia';
+import type { Theme } from './sectionMedia';
 import './anatomy.css';
 
 const TrendPanel = lazy(() => import('./TrendPanel'));
 const AnatomyViewer = lazy(() => import('./AnatomyViewer'));
+const THEME_KEY = 'aegis.theme';
+/** Saved choice first; otherwise the system preference. Storage may be unavailable. */
+function initialTheme(): Theme {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark') return saved;
+  } catch {
+    /* private mode or blocked storage: fall back to the system preference */
+  }
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
 const dataStateText: Record<string, string> = {
   stale: 'Medición caducada',
   missing: 'Medición ausente',
@@ -106,7 +120,17 @@ export default function AnatomyApp() {
     [allMarkers, focused, region],
   );
   const isAlert = regionalStatus === 'review' || regionalStatus === 'emergency';
-  const hasMedia = Boolean(sectionMedia[region]);
+  const [theme, setTheme] = useState<Theme>(initialTheme);
+  function toggleTheme() {
+    const next: Theme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch {
+      /* the choice still applies to this session */
+    }
+  }
+  const hasMedia = Boolean(sectionMediaFor(region, theme));
   // Section entry: the 3D camera zooms to the system, holds briefly, then the media fades in.
   const [mediaShown, setMediaShown] = useState(false);
   useEffect(() => {
@@ -195,7 +219,7 @@ export default function AnatomyApp() {
   }
 
   return (
-    <div className={`anatomy-app ${focused ? 'is-focused' : ''}`}>
+    <div className={`anatomy-app ${focused ? 'is-focused' : ''}`} data-theme={theme}>
       <header className="anatomy-topbar">
         <div className="anatomy-identity">
           <a href="/" className="anatomy-wordmark" aria-label="AEGIS inicio">
@@ -232,6 +256,15 @@ export default function AnatomyApp() {
             <ChevronDown size={17} />
           </label>
           <button
+            className="anatomy-theme-toggle"
+            aria-label={theme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+            title={theme === 'dark' ? 'Tema claro' : 'Tema oscuro'}
+            aria-pressed={theme === 'dark'}
+            onClick={toggleTheme}
+          >
+            {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
+          </button>
+          <button
             className="anatomy-profile-button"
             aria-label="Información del astronauta"
             onClick={() => setModal('model')}
@@ -247,6 +280,7 @@ export default function AnatomyApp() {
           <AnatomyViewer
             markers={focused ? [] : markers}
             labels={false}
+            theme={theme}
             selected={region}
             focused={focused && !hasMedia}
             isolate={false}
@@ -263,7 +297,7 @@ export default function AnatomyApp() {
             aria-hidden={!mediaShown}
             data-shown={mediaShown}
           >
-            <SystemMedia region={region} />
+            <SystemMedia key={theme} region={region} theme={theme} />
           </div>
         )}
         {!focused && (
@@ -362,8 +396,8 @@ export default function AnatomyApp() {
                 className={`anatomy-system ${region === s.id ? 'selected' : ''} ${alert ? 'has-alert' : ''}`}
                 aria-pressed={region === s.id}
                 onClick={() => selectRegion(s.id)}
-                onPointerEnter={() => prefetchSection(s.id)}
-                onFocus={() => prefetchSection(s.id)}
+                onPointerEnter={() => prefetchSection(s.id, theme)}
+                onFocus={() => prefetchSection(s.id, theme)}
               >
                 <SystemIcon id={s.id} />
                 <span>{s.name}</span>

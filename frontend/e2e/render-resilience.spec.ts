@@ -49,11 +49,11 @@ test('a failed section image is retryable and preserves the information panel', 
   page,
 }) => {
   let fail = true;
-  await page.route('**/media/systems/lungs.webp', (route) =>
+  await page.route('**/media/systems/brain.webp', (route) =>
     fail ? route.fulfill({ status: 503, body: 'temporary local failure' }) : route.continue(),
   );
   await ready(page);
-  await page.getByRole('button', { name: 'Respiratorio', exact: true }).click();
+  await page.getByRole('button', { name: 'Neurológico', exact: true }).click();
   await expect(page.locator('.system-media-error')).toBeVisible();
   await expect(page.locator('.anatomy-metrics')).toBeVisible();
   fail = false;
@@ -63,7 +63,7 @@ test('a failed section image is retryable and preserves the information panel', 
     .click();
   await expect(page.locator('.anatomy-stage .system-media-current')).toHaveAttribute(
     'src',
-    '/media/systems/lungs.webp',
+    '/media/systems/brain.webp',
   );
   await expect(page.locator('.system-media-error')).toHaveCount(0);
 });

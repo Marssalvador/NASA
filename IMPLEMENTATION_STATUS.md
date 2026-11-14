@@ -81,3 +81,6 @@ Proyecto Supabase `AEGIS-Development` (eu-central-1, plan gratuito, aprobado por
 
 Límites reales: los umbrales proceden de documentos del usuario y son orientativos; las rutas de riesgo son hipótesis de diseño; ninguna recomendación está revisada médicamente y el contenido farmacológico se retiene. La identidad `X-AEGIS-User` es de desarrollo: falta verificar el JWT de Supabase en la API y conceder accesos a usuarios reales. El frontend aún no consume `/api/v2`. ECG, masa corporal y pH/volumen urinario continuo no se modelan porque la especificación no da método o unidad utilizable.
 
+### Tema claro y oscuro (ronda 7)
+
+Selector de tema persistente. Claro: ajustes porcelana de la ronda 4 con el vídeo del corazón y las fotos claras de cerebro, riñones, óseo y metabólico (Respiratorio y Muscular entran con zoom 3D). Oscuro: ajustes holográficos de la ronda 5 con las cinco fotos de Sunra. Capturas theme-light-* y theme-dark-* en docs/visual-review/.
