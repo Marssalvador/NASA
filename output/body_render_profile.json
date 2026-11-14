@@ -1,0 +1,15 @@
+{
+  "render_profile": {
+    "sex": "male",
+    "shoulder_width": 41.92914734243353,
+    "torso_width": 32.22282265459683,
+    "torso_height": 59.87458649248217,
+    "waist_width": 27.307214350793075,
+    "hip_width": 30.15517835649685,
+    "head_radius": 11.013287973824374,
+    "arm_length": 43.24964857807133,
+    "leg_length": 48.56218571050195,
+    "muscle_intensity": 1.09501677854395,
+    "symmetry_bias": 0.040269849989998184
+  }
+}
