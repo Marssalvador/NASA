@@ -1,6 +1,6 @@
 # AEGIS
 
-Local research demonstrator. Python/FastAPI + SQLite in backend/, React/TypeScript in frontend/. Never add cloud dependencies, external AI calls, runtime CDNs or remote fonts.
+Local research demonstrator. Python/FastAPI + SQLite in backend/, React/TypeScript in frontend/. Never add external AI calls, runtime CDNs or remote fonts. The only approved hosted dependency is the Supabase development project AEGIS-Development for the longitudinal record (backend/aegis/medical, supabase/migrations); it holds synthetic data only, every table keeps RLS, and the app must keep working offline with AEGIS_RECORD_BACKEND=memory (default). Schema changes go through versioned migrations in supabase/migrations; clinical catalogue rows are generated from data/*.json by scripts/build_supabase_seed.py.
 
 Biomarker definitions live in data/biomarker_registry.json and are read at request time. No metric-specific frontend branches. Keep analysis, persistence, guidance and model adapters independent. All measurement dates must have an explicit timezone; store UTC. Reject non-finite values and incompatible units. Preserve source, quality and synthetic provenance. Never pool people or synthetic and real observations. Baselines are separately recorded, never inferred from the same evaluation window.
 
