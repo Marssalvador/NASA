@@ -8,6 +8,7 @@ import {
   ChevronRight,
   CircleHelp,
   Database,
+  FileHeart,
   Layers,
   Maximize2,
   MousePointer2,
@@ -26,6 +27,7 @@ import {
 
 import { anatomySystems, CAMERA_DURATION_MS, evaluationColor } from './anatomyConfig';
 import { buildMarkers, fmt, isDormant, shortName, statusText } from './lib';
+import MedicalIntelligence from './MedicalIntelligence';
 import SensingRoute from './SensingRoute';
 import type { Analysis } from './types';
 import useMission from './useMission';
@@ -81,7 +83,8 @@ export default function AnatomyApp() {
     [modal, setModal] = useState<DialogName>(null);
   const [back, setBack] = useState(false),
     [reset, setReset] = useState(0),
-    [layersOpen, setLayersOpen] = useState(false);
+    [layersOpen, setLayersOpen] = useState(false),
+    [medicalOpen, setMedicalOpen] = useState(false);
   const [layers, setLayers] = useState<LayersState>({
     skin: true,
     muscles: true,
@@ -270,6 +273,14 @@ export default function AnatomyApp() {
             onClick={() => setModal('model')}
           >
             <UserRound size={23} />
+          </button>
+          <button
+            className="anatomy-medical-button"
+            aria-label="Abrir inteligencia médica de misión"
+            onClick={() => setMedicalOpen(true)}
+          >
+            <FileHeart size={18} />
+            <span>IA médica</span>
           </button>
         </div>
       </header>
@@ -659,6 +670,7 @@ export default function AnatomyApp() {
         current={current}
         definition={definition}
       />
+      {medicalOpen && <MedicalIntelligence onClose={() => setMedicalOpen(false)} />}
     </div>
   );
 }

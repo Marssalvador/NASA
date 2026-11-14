@@ -263,6 +263,19 @@ def test_api_record_evaluation_and_body_systems(api):
     assert trend['series'] and trend['references']
 
 
+def test_api_declared_cycle_event_is_timezone_aware_and_profile_scoped(api):
+    headers = {'X-AEGIS-User': 'user-a112'}
+    path = '/api/v2/astronauts/A-112/events'
+    body = {'kind': 'menstruation_start', 'started_at': '2026-11-14T08:00:00Z',
+            'is_synthetic': True, 'severity': 'declared', 'details': {'declared_by': 'astronaut'}}
+    saved = api.post(path, headers=headers, json=body)
+    assert saved.status_code == 201
+    assert saved.json()['started_at'].endswith('+00:00')
+    assert api.post(path, headers=headers, json=body).status_code == 409
+    assert api.post(path, headers={'X-AEGIS-User': 'user-a113'}, json=body).status_code == 404
+    assert api.post(path, headers=headers, json={**body, 'started_at': '2026-11-15T08:00:00'}).status_code == 422
+
+
 def test_api_import_is_atomic_and_detects_duplicates(api):
     a112 = {'X-AEGIS-User': 'user-a112'}
     good = 'biomarker_id,value,unit,measured_at\nhrv,49,ms,2026-11-20T07:00:00Z\n'

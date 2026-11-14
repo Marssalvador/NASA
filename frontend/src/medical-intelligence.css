@@ -1,0 +1,564 @@
+:root {
+  --mi-bg: rgba(3, 9, 18, 0.82);
+  --mi-panel: rgba(13, 22, 33, 0.95);
+  --mi-panel-2: rgba(19, 35, 50, 0.95);
+  --mi-border: rgba(146, 176, 214, 0.2);
+  --mi-text: #ebf4ff;
+  --mi-soft: #a9bfd8;
+  --mi-primary: #7cc8ff;
+  --mi-accent: #97f0dc;
+  --mi-danger: #ff8a7d;
+  --mi-warn: #ffcf5d;
+  --mi-success: #6fe6b8;
+}
+
+.mi-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 16, 0.7);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  z-index: 60;
+}
+
+.mi-dialog {
+  width: min(1180px, 92vw);
+  max-height: 90vh;
+  border: 1px solid var(--mi-border);
+  border-radius: 24px;
+  background: linear-gradient(180deg, var(--mi-panel) 0%, rgba(8, 13, 20, 0.96) 100%);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.mi-header,
+.mi-section,
+.mi-cycle-card,
+.mi-profile-card,
+.mi-evidence,
+.mi-medication-note,
+.mi-alert,
+.mi-engine-note,
+.mi-open-requests,
+.mi-entry,
+.mi-intro {
+  border: 1px solid var(--mi-border);
+  background: rgba(12, 18, 29, 0.6);
+}
+
+.mi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--mi-border);
+}
+
+.mi-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.mi-brand > span {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.9rem;
+  display: grid;
+  place-items: center;
+  background: rgba(124, 200, 255, 0.14);
+  color: var(--mi-primary);
+}
+
+.mi-brand small,
+.mi-eyebrow {
+  display: inline-block;
+  letter-spacing: 0.12em;
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  color: var(--mi-soft);
+}
+
+.mi-brand h1 {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+}
+
+.mi-close,
+.mi-run,
+.mi-secondary,
+.mi-open-requests p span,
+.mi-metric,
+.mi-risk,
+.mi-entry button,
+.anatomy-medical-button {
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.mi-close {
+  width: 2.7rem;
+  height: 2.7rem;
+  border: 1px solid var(--mi-border);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--mi-text);
+  cursor: pointer;
+}
+
+.mi-close:hover,
+.mi-run:hover,
+.mi-secondary:hover,
+.anatomy-medical-button:hover {
+  transform: translateY(-1px);
+}
+
+.mi-scroll {
+  padding: 1.1rem 1.25rem 1.4rem;
+  max-height: calc(90vh - 82px);
+  overflow: auto;
+}
+
+.mi-intro {
+  border-radius: 18px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mi-intro p {
+  margin: 0.35rem 0 0;
+  color: var(--mi-soft);
+  line-height: 1.5;
+}
+
+.mi-run,
+.mi-secondary,
+.anatomy-medical-button {
+  border: 1px solid rgba(124, 200, 255, 0.45);
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, rgba(124, 200, 255, 0.18), rgba(124, 200, 255, 0.08));
+  color: var(--mi-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mi-run {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+}
+
+.mi-alert {
+  margin-top: 1rem;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  color: var(--mi-text);
+}
+
+.mi-alert.error {
+  border-color: rgba(255, 138, 125, 0.45);
+  background: rgba(103, 33, 30, 0.25);
+}
+
+.mi-alert.success {
+  border-color: rgba(111, 230, 184, 0.45);
+  background: rgba(15, 71, 56, 0.23);
+}
+
+.mi-profile-card,
+.mi-cycle-card,
+.mi-section,
+.mi-evidence {
+  margin-top: 1rem;
+  border-radius: 20px;
+  padding: 1rem 1.1rem;
+}
+
+.mi-profile-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mi-profile-left {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.mi-avatar {
+  width: 2.8rem;
+  height: 2.8rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(151, 240, 220, 0.1);
+  color: var(--mi-accent);
+}
+
+.mi-select-label {
+  display: block;
+  margin-top: 0.35rem;
+}
+
+.mi-select-label select,
+.mi-entry select,
+.mi-entry input,
+.mi-cycle-form input {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.8rem;
+  border: 1px solid var(--mi-border);
+  background: rgba(11, 17, 27, 0.9);
+  color: var(--mi-text);
+}
+
+.mi-profile-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.mi-sex-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--mi-border);
+  color: var(--mi-text);
+  background: rgba(255,255,255,0.04);
+  font-size: 0.72rem;
+}
+
+.mi-sex-badge.female {
+  background: rgba(255, 140, 170, 0.12);
+  border-color: rgba(255, 140, 170, 0.35);
+}
+
+.mi-sex-badge.male {
+  background: rgba(124, 200, 255, 0.12);
+  border-color: rgba(124, 200, 255, 0.35);
+}
+
+.mi-model-note,
+.mi-engine-note {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--mi-soft);
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid var(--mi-border);
+  background: rgba(8, 13, 20, 0.6);
+}
+
+.mi-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mi-section-heading h2 {
+  margin: 0.25rem 0 0;
+  font-size: 1.1rem;
+}
+
+.mi-provenance,
+.mi-source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--mi-soft);
+  font-size: 0.72rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--mi-border);
+  background: rgba(255,255,255,0.04);
+}
+
+.mi-provenance span,
+.mi-source-chip::before {
+  width: 0.6rem;
+  height: 0.6rem;
+  content: "";
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--mi-success);
+  box-shadow: 0 0 12px rgba(111, 230, 184, 0.7);
+}
+
+.mi-metrics {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.9rem;
+}
+
+.mi-metric {
+  border: 1px solid var(--mi-border);
+  background: rgba(9, 15, 22, 0.7);
+  border-radius: 14px;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.mi-metric div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--mi-soft);
+  font-size: 0.72rem;
+}
+
+.mi-metric strong {
+  font-size: 1.35rem;
+}
+
+.mi-metric strong small,
+.mi-metric em {
+  font-size: 0.7rem;
+  font-style: normal;
+  color: var(--mi-soft);
+}
+
+.mi-loading,
+.mi-empty {
+  display: grid;
+  place-items: center;
+  padding: 2rem 0 0.8rem;
+  color: var(--mi-soft);
+}
+
+.mi-spin {
+  animation: mi-spin 1s linear infinite;
+}
+
+@keyframes mi-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.mi-entry {
+  margin-top: 1rem;
+  border-radius: 16px;
+  padding: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+}
+
+.mi-entry-fields {
+  margin-top: 0.55rem;
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(100px, 0.8fr) minmax(180px, 1.2fr);
+  gap: 0.75rem;
+}
+
+.mi-entry label,
+.mi-cycle-form label {
+  display: block;
+  color: var(--mi-soft);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.mi-entry button,
+.mi-secondary,
+.mi-cycle-form button {
+  padding: 0.8rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mi-cycle-card {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.mi-cycle-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: rgba(124, 200, 255, 0.12);
+  color: var(--mi-primary);
+  display: grid;
+  place-items: center;
+}
+
+.mi-cycle-content {
+  flex: 1;
+}
+
+.mi-cycle-content h2 {
+  margin: 0.3rem 0;
+  font-size: 1.15rem;
+}
+
+.mi-cycle-content p {
+  margin: 0;
+  color: var(--mi-soft);
+  line-height: 1.5;
+}
+
+.mi-cycle-form {
+  display: flex;
+  align-items: end;
+  gap: 0.8rem;
+}
+
+.mi-risk-section {
+  padding-bottom: 1.1rem;
+}
+
+.mi-risks {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.mi-risk {
+  border: 1px solid var(--mi-border);
+  border-radius: 16px;
+  padding: 1rem;
+  background: rgba(8, 13, 20, 0.65);
+}
+
+.mi-risk.level-green { border-color: rgba(111, 230, 184, 0.38); }
+.mi-risk.level-yellow { border-color: rgba(255, 207, 93, 0.38); }
+.mi-risk.level-orange { border-color: rgba(255, 146, 94, 0.38); }
+.mi-risk.level-red { border-color: rgba(255, 138, 125, 0.4); }
+.mi-risk.level-insufficient_data { border-color: rgba(170, 180, 200, 0.38); }
+
+.mi-risk-title {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+
+.mi-level-mark {
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-top: 0.24rem;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 16px currentColor;
+}
+
+.mi-risk h3 {
+  margin: 0;
+  font-size: 1.06rem;
+}
+
+.mi-risk > p,
+.mi-missing,
+.mi-request p,
+.mi-recommendations p,
+.mi-open-requests p,
+.mi-footer-note {
+  margin: 0.7rem 0 0;
+  color: var(--mi-soft);
+  line-height: 1.55;
+}
+
+.mi-missing {
+  display: block;
+}
+
+.mi-request,
+.mi-recommendations,
+.mi-open-requests {
+  margin-top: 0.9rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--mi-border);
+}
+
+.mi-request strong,
+.mi-recommendations strong,
+.mi-open-requests strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.4rem;
+}
+
+.mi-medication-note {
+  margin-top: 1rem;
+  border-radius: 16px;
+  padding: 0.95rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: var(--mi-soft);
+}
+
+.mi-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mi-evidence a,
+.anatomy-medical-button {
+  text-decoration: none;
+}
+
+.mi-evidence a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(124, 200, 255, 0.08);
+  border: 1px solid var(--mi-border);
+  color: var(--mi-text);
+}
+
+.mi-footer-note {
+  margin-top: 1rem;
+  font-size: 0.72rem;
+  color: var(--mi-soft);
+}
+
+.anatomy-medical-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(124, 200, 255, 0.08);
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 200, 255, 0.22);
+  color: var(--mi-text);
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .mi-intro,
+  .mi-profile-card,
+  .mi-entry,
+  .mi-cycle-card,
+  .mi-section-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mi-entry-fields {
+    grid-template-columns: 1fr;
+  }
+}

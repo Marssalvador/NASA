@@ -88,3 +88,40 @@ Límites reales: los umbrales proceden de documentos del usuario y son orientati
 ### Tema claro y oscuro (ronda 7)
 
 Selector de tema persistente. Claro: ajustes porcelana de la ronda 4 con el vídeo del corazón y las fotos claras de cerebro, riñones, óseo y metabólico (Respiratorio y Muscular entran con zoom 3D). Oscuro: ajustes holográficos de la ronda 5 con las cinco fotos de Sunra. Capturas theme-light-* y theme-dark-* en docs/visual-review/.
+
+### Módulo de inteligencia médica en la interfaz (14 noviembre 2026)
+
+He convertido ese bloque en un módulo de “Inteligencia médica de misión” dentro de la app, en MedicalIntelligence.tsx, con la lógica de análisis apoyada en el backend en engine.py y el contexto hormonal en cycle.py.
+
+Incluye esto:
+Test básicos: frecuencia cardíaca, temperatura, glucosa, hidratación/electrolitos, sueño, actividad y lactato.
+Evaluación de riesgo con reglas locales y sin diagnóstico clínico: lo que hace es comparar señales con el patrón del astronauta y sugerir revisiones o comprobaciones.
+Recomendaciones de tipo:
+nutricionales
+deportivas
+farmacológicas
+con la advertencia de que requieren revisión médica
+Evidencias de NASA/CSA en la interfaz, usando los enlaces que pediste.
+Cambio de perfil masculino/femenino y contexto de ciclo hormonal para mujeres.
+Registro manual de mediciones y evento declarativo de menstruación.
+Mensaje claro de que esto es un sistema de apoyo investigativo, no un diagnóstico médico.
+En la práctica
+La app no es una “IA entrenada” como una red neuronal de visión o predicción real. Lo que tenemos es una inteligencia médica basada en reglas y evaluación de patrones del backend, con datos sintéticos de demostración.
+
+Eso encaja con el requerimiento original, pero sin caer en la idea de “diagnosticar” al astronauta. El sistema da:
+
+señales de riesgo
+solicitudes de pruebas
+recomendaciones documentales
+contexto fisiológico
+puesta en escena visual del panel
+Archivos clave
+MedicalIntelligence.tsx
+engine.py
+cycle.py
+README.md
+Si quieres, ahora puedo dejarte una versión aún más “final” de ese módulo: más elegante visualmente, más clara en texto y más cercana al estilo de panel médico de misión.
+
+Se añadió el acceso «Salud IA» al dashboard. El panel consume la API local `/api/v2` y permite alternar dos expedientes sintéticos de demostración (A-112, perfil femenino con ciclo declarado; A-113, masculino), revisar frecuencia cardiaca, temperatura, glucosa, duración del sueño, actividad resistida y señales experimentales de sodio en sudor/lactato, guardar entradas marcadas como sintéticas y ejecutar la evaluación existente. La fase menstrual solo se contextualiza a partir de fechas declaradas por la persona; no se infiere automáticamente. El atlas corporal sigue siendo una malla genérica compartida, sin variante femenina.
+
+La evaluación usa el adaptador transparente de reglas locales, no una IA entrenada con datos NASA. Las fuentes HRP/CSA se presentan como contexto y lectura, no como datos de entrenamiento ni validación clínica. Los valores simulados y sensores experimentales se identifican; las contramedidas requieren revisión médica y las opciones farmacológicas se retienen. La interfaz no ofrece dosis ni tratamiento. Se añadió el endpoint de evento menstrual declarado con validación de sexo, estado de ciclo, procedencia sintética y zona horaria.

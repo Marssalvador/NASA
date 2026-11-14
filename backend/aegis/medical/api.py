@@ -12,7 +12,7 @@ import io
 import os
 from typing import Literal
 from fastapi import APIRouter, Header, HTTPException, Query, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from . import memory, synthetic, validation
 from .domain import LEVEL_ORDER
 from .engine import Engine
@@ -112,6 +112,21 @@ class ImportBody(BaseModel):
     source: str = Field(min_length=1)
 
 
+class MissionEventBody(BaseModel):
+    kind: Literal['menstruation_start']
+    started_at: datetime
+    is_synthetic: bool
+    severity: str | None = None
+    details: dict = Field(default_factory=dict)
+
+    @field_validator('started_at')
+    @classmethod
+    def require_timezone(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError('El evento necesita zona horaria explícita.')
+        return value.astimezone(timezone.utc)
+
+
 @router.post('/astronauts/{code}/measurements')
 def import_measurements(code: str, body: ImportBody, request: Request, user: str = Header(alias='X-AEGIS-User')):
     engine = _engine(request)
@@ -131,6 +146,26 @@ def import_measurements(code: str, body: ImportBody, request: Request, user: str
         raise HTTPException(422, report)  # atomic: nothing is stored if any row is invalid
     ids = engine.repo.append_observations(accepted, actor=user)
     return {**report, 'ids': ids, 'links': [_link(i) for i in ids]}
+
+
+@router.post('/astronauts/{code}/events', status_code=201)
+def add_event(code: str, body: MissionEventBody, request: Request,
+              user: str = Header(alias='X-AEGIS-User')):
+    """Store an explicitly declared cycle event; it never infers a phase from physiology."""
+    engine = _engine(request)
+    profile = _profile(engine, code, user, write=True)
+    if profile.sex != 'female' or profile.cycle_status != 'active':
+        raise HTTPException(422, 'El perfil no declara un ciclo activo.')
+    if body.is_synthetic != profile.is_synthetic:
+        raise HTTPException(422, 'El evento debe conservar la procedencia del perfil.')
+    if any(e.kind == body.kind and e.started_at == body.started_at
+           for e in engine.repo.events(profile.id)):
+        raise HTTPException(409, 'Ese evento ya está registrado.')
+    event_id = engine.repo.append_event({
+        'astronaut_id': profile.id, 'kind': body.kind, 'started_at': body.started_at,
+        'severity': body.severity, 'details': body.details, 'is_synthetic': body.is_synthetic,
+    })
+    return {'id': event_id, 'astronaut': code, 'kind': body.kind, 'started_at': body.started_at}
 
 
 class CorrectionBody(BaseModel):
