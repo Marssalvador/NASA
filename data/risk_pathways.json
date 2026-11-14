@@ -1,0 +1,46 @@
+[
+  {
+    "id": "bone_resorption",
+    "name": "Resorción ósea",
+    "body_region": "skeleton",
+    "triggers": ["grip_strength"],
+    "confirmations": ["ctx_i", "p1np"],
+    "planned_signals": ["Actividad física y carga de ejercicio (acelerometría)"],
+    "rationale": "La descarga mecánica en microgravedad se asocia a pérdida musculoesquelética. Una caída sostenida de la fuerza respecto al patrón personal justifica solicitar marcadores de remodelado óseo.",
+    "evidence": "Ruta de demostración. El aumento de CTX-I en vuelo está descrito en la literatura de NASA; usar la fuerza de prensión como disparador es una hipótesis de diseño pendiente de validación.",
+    "demonstration": true
+  },
+  {
+    "id": "renal_stones",
+    "name": "Cálculos renales",
+    "body_region": "kidneys",
+    "triggers": ["ctx_i"],
+    "confirmations": ["urinary_calcium", "creatinine"],
+    "planned_signals": ["Electrolitos e hidratación en sudor (sensor experimental)", "pH urinario", "Citrato urinario"],
+    "rationale": "La resorción ósea libera calcio que se excreta por orina. Una desviación de CTX-I justifica revisar calcio urinario y función renal.",
+    "evidence": "Hipótesis de diseño. Sin umbrales clínicos validados en esta demo.",
+    "demonstration": false
+  },
+  {
+    "id": "inflammation_overtraining",
+    "name": "Inflamación o sobreentrenamiento",
+    "body_region": "metabolic",
+    "triggers": ["temperature", "hrv", "sleep", "cortisol"],
+    "confirmations": ["il6", "crp"],
+    "planned_signals": ["Lactato (sensor experimental)", "Cortisol continuo en sudor o fluido intersticial (experimental)"],
+    "rationale": "Cambios combinados en temperatura, variabilidad cardíaca, sueño o cortisol pueden justificar una analítica inflamatoria.",
+    "evidence": "Hipótesis de diseño. Los sensores continuos de lactato y cortisol no están validados para uso en misión.",
+    "demonstration": false
+  },
+  {
+    "id": "cardiovascular_orthostatic",
+    "name": "Alteración cardiovascular u ortostática",
+    "body_region": "heart",
+    "triggers": ["heart_rate", "hrv"],
+    "confirmations": ["systolic_bp"],
+    "planned_signals": [],
+    "rationale": "Una desviación sostenida de frecuencia cardíaca o HRV justifica una medición de presión arterial y una evaluación complementaria.",
+    "evidence": "Hipótesis de diseño. La interpretación requiere protocolo médico revisado.",
+    "demonstration": false
+  }
+]

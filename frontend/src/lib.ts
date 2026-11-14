@@ -1,4 +1,5 @@
-import type { Analysis, Status } from './types';
+import type { Analysis, Biomarker, RiskPathway, Status } from './types';
+import { regionSites } from './anatomyConfig';
 export const statusText: Record<Status, string> = {
   stable: 'Sin desviaciones detectadas',
   review: 'Revisión necesaria',
@@ -84,4 +85,69 @@ export function csvRows(text: string): string[][] {
     rows.push(row);
   }
   return rows;
+}
+
+export interface BodyMarker {
+  id: string;
+  site: string;
+  region: string;
+  tone: 'alert' | 'request';
+  title: string;
+  detail: string;
+}
+const siteOf = (d: Biomarker) => d.body_site ?? regionSites[d.body_region] ?? d.body_region;
+/** Compact display name: keeps acronyms (CTX-I, CRP) unless the full registry name is long. */
+export const shortName = (d: Biomarker) => (d.name.length > 26 ? d.name.split(' · ')[0] : d.name);
+/**
+ * Body markers derived only from computed evaluations and pathway requests.
+ * One marker per anatomical site; deviations outrank pending layer-2 requests.
+ */
+export function buildMarkers(
+  analyses: Analysis[],
+  registry: Biomarker[],
+  pathways: RiskPathway[] = [],
+): BodyMarker[] {
+  const bySite = new Map<string, BodyMarker>();
+  for (const a of analyses) {
+    if (a.status !== 'review' && a.status !== 'emergency') continue;
+    const d = registry.find((x) => x.id === a.metric_id);
+    if (!d) continue;
+    const z = a.deviation_z;
+    const detail =
+      z == null
+        ? 'Desviación del patrón personal'
+        : `${z > 0 ? '↑' : '↓'} ${fmt(Math.abs(z), 1)} σ sobre su patrón`;
+    const site = siteOf(d),
+      prior = bySite.get(site);
+    bySite.set(
+      site,
+      prior
+        ? { ...prior, title: `${prior.title} · ${shortName(d)}`, detail: 'Varias desviaciones' }
+        : { id: `alert-${site}`, site, region: d.body_region, tone: 'alert', title: shortName(d), detail },
+    );
+  }
+  for (const p of pathways)
+    for (const c of p.confirmations) {
+      if (c.state !== 'requested') continue;
+      const d = registry.find((x) => x.id === c.metric_id);
+      if (!d || bySite.has(siteOf(d))) continue;
+      bySite.set(siteOf(d), {
+        id: `request-${siteOf(d)}`,
+        site: siteOf(d),
+        region: d.body_region,
+        tone: 'request',
+        title: shortName(d),
+        detail: 'Medición de capa 2 solicitada',
+      });
+    }
+  return [...bySite.values()];
+}
+
+/** Layer-2 acquisitions nobody requested and nobody took. Shown as "not requested", never a gap. */
+export function isDormant(a: Analysis, registry: Biomarker[], pathways: RiskPathway[] = []) {
+  const d = registry.find((x) => x.id === a.metric_id);
+  if (!d || d.sensing_layer !== 2 || a.latest) return false;
+  return !pathways.some((p) =>
+    p.confirmations.some((c) => c.metric_id === a.metric_id && c.state === 'requested'),
+  );
 }

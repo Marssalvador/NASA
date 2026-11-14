@@ -1,0 +1,54 @@
+{
+  "source": "../humanoid.glb",
+  "license": "CC-BY-SA-4.0",
+  "models": [
+    {
+      "region": "overview",
+      "file": "overview.glb",
+      "triangles": 271963,
+      "bytes": 2279748
+    },
+    {
+      "region": "heart",
+      "file": "detail-heart.glb",
+      "triangles": 41481,
+      "bytes": 202640
+    },
+    {
+      "region": "lungs",
+      "file": "detail-lungs.glb",
+      "triangles": 26610,
+      "bytes": 143308
+    },
+    {
+      "region": "kidneys",
+      "file": "detail-kidneys.glb",
+      "triangles": 10000,
+      "bytes": 53032
+    },
+    {
+      "region": "brain",
+      "file": "detail-brain.glb",
+      "triangles": 74427,
+      "bytes": 357660
+    },
+    {
+      "region": "skeleton",
+      "file": "detail-skeleton.glb",
+      "triangles": 117963,
+      "bytes": 595020
+    },
+    {
+      "region": "muscles",
+      "file": "detail-muscles.glb",
+      "triangles": 231162,
+      "bytes": 1958564
+    },
+    {
+      "region": "metabolic",
+      "file": "detail-metabolic.glb",
+      "triangles": 45775,
+      "bytes": 229044
+    }
+  ]
+}

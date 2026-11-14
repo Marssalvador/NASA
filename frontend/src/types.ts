@@ -14,9 +14,12 @@ export interface Biomarker {
   unit: string;
   body_system: string;
   body_region: string;
+  body_site?: string | null;
   sample_type: string;
   measurement_method: string;
   expected_frequency: number;
+  sensing_layer: 1 | 2;
+  sensor_readiness: 'validated' | 'experimental';
   reference_source: string;
   enabled: boolean;
 }
@@ -90,6 +93,21 @@ export interface Prediction {
   validation_status: string;
   is_synthetic: boolean;
 }
+export type PathwayStage = 'quiet' | 'unmonitored' | 'requested' | 'not_confirmed' | 'review';
+export type ConfirmationStateName = 'not_requested' | 'requested' | 'within_pattern' | 'deviates';
+export interface RiskPathway {
+  id: string;
+  name: string;
+  body_region: string;
+  stage: PathwayStage;
+  triggered_by: string[];
+  triggers: string[];
+  confirmations: { metric_id: string; state: ConfirmationStateName }[];
+  planned_signals: string[];
+  rationale: string;
+  evidence: string;
+  demonstration: boolean;
+}
 export interface Dashboard {
   astronaut: Astronaut;
   as_of: string;
@@ -97,6 +115,7 @@ export interface Dashboard {
   analyses: Analysis[];
   findings: Finding[];
   measurement_requests: { metric_id: string; reason: string; how_to_measure: string }[];
+  pathways: RiskPathway[];
   guidance: Guidance[];
   prediction: Prediction | null;
   model_error: string | null;

@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 Status = Literal['stable', 'review', 'emergency', 'insufficient_data']
 SYSTEMS = Literal['cardiovascular', 'muscular', 'skeletal', 'renal', 'immune', 'neurological', 'metabolic']
+REGIONS = Literal['heart', 'lungs', 'kidneys', 'muscles', 'skeleton', 'brain', 'metabolic']
 
 
 class Contract(BaseModel):
@@ -33,10 +34,14 @@ class BiomarkerDefinition(Contract):
     name: str
     unit: str
     body_system: SYSTEMS
-    body_region: Literal['heart', 'lungs', 'kidneys', 'muscles', 'skeleton', 'brain', 'metabolic']
+    body_region: REGIONS
+    body_site: str | None = Field(default=None, pattern=r'^[a-z][a-z_]*$',
+                                  description='Anatomical site used only to place the visual marker')
     sample_type: str
     measurement_method: str
     expected_frequency: float = Field(gt=0, description='Hours; acquisition configuration, not a safety limit')
+    sensing_layer: Literal[1, 2] = Field(default=1, description='1 continuous/routine, 2 acquired when a pathway requests it')
+    sensor_readiness: Literal['validated', 'experimental'] = 'validated'
     reference_source: str
     enabled: bool = True
 
@@ -152,3 +157,35 @@ class GuidanceProtocol(Contract):
         if self.reviewed_at:
             self.reviewed_at = utc(self.reviewed_at)
         return self
+
+
+class RiskPathwayDefinition(Contract):
+    """Hierarchical sensing route. A design hypothesis, never a clinical decision rule."""
+    id: str = Field(pattern=r'^[a-z][a-z0-9_]*$')
+    name: str
+    body_region: REGIONS
+    triggers: list[str] = Field(min_length=1)
+    confirmations: list[str] = Field(min_length=1)
+    planned_signals: list[str] = Field(default_factory=list)
+    rationale: str
+    evidence: str
+    demonstration: bool = False
+
+
+class ConfirmationState(Contract):
+    metric_id: str
+    state: Literal['not_requested', 'requested', 'within_pattern', 'deviates']
+
+
+class RiskPathwayState(Contract):
+    id: str
+    name: str
+    body_region: REGIONS
+    stage: Literal['quiet', 'unmonitored', 'requested', 'not_confirmed', 'review']
+    triggered_by: list[str]
+    triggers: list[str]
+    confirmations: list[ConfirmationState]
+    planned_signals: list[str]
+    rationale: str
+    evidence: str
+    demonstration: bool

@@ -5,6 +5,8 @@ export default defineConfig({
   retries: 0,
   timeout: 30000,
   use: {
+    channel: 'chrome',
+    launchOptions: { args: ['--use-angle=d3d11'] },
     baseURL: 'http://127.0.0.1:8001',
     viewport: { width: 1440, height: 1000 },
     screenshot: 'only-on-failure',

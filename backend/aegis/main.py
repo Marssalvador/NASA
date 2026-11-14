@@ -4,7 +4,8 @@ import csv
 import io
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import Response
-from fastapi.staticfiles import StaticFiles
+from starlette.middleware.gzip import GZipMiddleware
+from .static import PrecompressedStaticFiles
 from pydantic import field_validator
 from . import store
 from .adapters import load_adapter
@@ -13,6 +14,7 @@ from .demo import seed
 from .guidance import GuidanceEngine, EMERGENCY_SYMPTOMS
 from .importer import ImportSpec, prepare
 from .registry import ROOT, registry
+from . import sensing
 from .schemas import Contract, Astronaut, PersonalBaseline, utc
 
 
@@ -25,6 +27,7 @@ async def lifespan(app):
 
 
 app = FastAPI(title='AEGIS local research API', version='0.1.0', lifespan=lifespan)
+app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=3)
 
 
 def subject_or_404(subject_id):
@@ -42,6 +45,11 @@ def health():
 @app.get('/api/registry')
 def biomarkers():
     return list(registry().values())
+
+
+@app.get('/api/pathways')
+def risk_pathways():
+    return sensing.pathways(registry())
 
 
 @app.get('/api/astronauts')
@@ -84,14 +92,16 @@ def dashboard(subject_id: str, as_of: datetime | None = None):
         baseline = next((b for b in personal if b.metric_id == d.id and b.is_synthetic == provenance), None)
         analyses.append(analyze(d, metric_rows, baseline, now))
     events = store.events(subject_id, now)
-    overall, findings, requests, guidance = GuidanceEngine().evaluate(analyses, definitions, events)
+    routes = sensing.evaluate(analyses, definitions)
+    overall, findings, requests, guidance = GuidanceEngine().evaluate(
+        analyses, definitions, events, sensing.requested(routes, definitions))
     try:
         prediction = app.state.model.predict(analyses)
         model_error = None
     except Exception as error:
         prediction, model_error = None, f'Modelo no disponible: {type(error).__name__}: {error}'
     return {'astronaut': subject, 'as_of': now, 'status': overall, 'analyses': analyses,
-            'findings': findings, 'measurement_requests': requests, 'guidance': guidance,
+            'findings': findings, 'measurement_requests': requests, 'pathways': routes, 'guidance': guidance,
             'prediction': prediction, 'model_error': model_error, 'events': events,
             'demo_start': subject.mission_start, 'demo_end': subject.mission_start + timedelta(days=29)}
 
@@ -151,4 +161,4 @@ def export(subject_id: str, format: str = Query('json', pattern='^(json|csv)$'),
 
 dist = ROOT / 'frontend' / 'dist'
 if dist.is_dir():
-    app.mount('/', StaticFiles(directory=dist, html=True), name='console')
+    app.mount('/', PrecompressedStaticFiles(directory=dist, html=True), name='console')

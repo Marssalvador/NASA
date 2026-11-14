@@ -10,7 +10,8 @@ from .schemas import Astronaut, Measurement, PersonalBaseline
 CENTERS = {'heart_rate': (68, 4), 'hrv': (52, 6), 'spo2': (98, .5), 'temperature': (36.6, .18),
            'glucose': (89, 6), 'sleep': (7.4, .4), 'grip_strength': (43, 3), 'creatinine': (.9, .08),
            'urinary_calcium': (170, 20), 'ctx_i': (.32, .04), 'p1np': (42, 5), 'vitamin_d': (34, 3),
-           'il6': (1.4, .2), 'crp': (.8, .15), 'cortisol': (13, 1.5), 'respiratory_rate': (14, 1), 'reaction_time': (245, 15)}
+           'il6': (1.4, .2), 'crp': (.8, .15), 'cortisol': (13, 1.5), 'respiratory_rate': (14, 1), 'reaction_time': (245, 15),
+           'systolic_bp': (117, 6)}
 
 
 def seed():
@@ -40,6 +41,9 @@ def seed():
                 if scenario == 'review' and metric_id == 'urinary_calcium' and day > 19:
                     continue
                 if scenario == 'review' and metric_id == 'il6' and day > 19:
+                    continue
+                # Layer-2 acquisitions exist only after a layer-1 signal requested them.
+                if d.sensing_layer == 2 and metric_id == 'systolic_bp' and (scenario == 'stable' or day < 25):
                     continue
                 deviation = 0
                 if scenario != 'stable' and day >= 20 and metric_id in {'heart_rate', 'ctx_i', 'grip_strength'}:

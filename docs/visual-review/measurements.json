@@ -1,0 +1,24 @@
+{
+  "method": "Manually reviewed body bounding boxes; luma threshold 80. Original images preserved.",
+  "reference": {
+    "box": [
+      505,
+      30,
+      890,
+      900
+    ],
+    "body_height_ratio": 0.924548352816153,
+    "dark_share": 0.022806389013285563
+  },
+  "render": {
+    "box": [
+      520,
+      30,
+      860,
+      887
+    ],
+    "body_height_ratio": 0.9107332624867163,
+    "dark_share": 0.0013110028141945227
+  },
+  "dark_share_ratio": 0.0574840152656703
+}

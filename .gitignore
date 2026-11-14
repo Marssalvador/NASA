@@ -13,3 +13,6 @@ playwright-report/
 design-review/
 assets/models/source/
 frontend/public/models/humanoid.glb
+frontend/public/models/overview.glb
+frontend/public/models/detail-*.glb
+frontend/public/models/runtime-manifest.json

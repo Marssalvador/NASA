@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
 import pytest
 from backend.aegis import registry as registry_module
@@ -21,12 +21,13 @@ def test_three_scenarios_come_from_engines(client):
 
 
 def test_import_preview_atomic_commit_duplicates_and_provenance(client):
-    s=spec(CSV)
+    imported_at=datetime.now(timezone.utc)+timedelta(seconds=1)
+    s=spec(CSV.replace('2026-11-14T12:00:00Z',imported_at.isoformat()))
     assert client.post('/api/import/preview',json=s).json()['inserted']==1
     assert client.post('/api/import/preview',json=s).json()['inserted']==1 # preview did not persist
     assert client.post('/api/import/commit',json=s).json()['inserted']==1
     assert client.post('/api/import/commit',json=s).json()['duplicates']==1
-    d=client.get('/api/astronauts/crew-01/dashboard?as_of=2026-11-14T13:00:00Z').json()
+    d=client.get('/api/astronauts/crew-01/dashboard',params={'as_of':imported_at.isoformat()}).json()
     a=next(a for a in d['analyses'] if a['metric_id']=='heart_rate')
     assert a['n']==1 and a['baseline'] is None and a['latest']['is_synthetic'] is False
 
@@ -97,7 +98,9 @@ def test_replay_changes_computed_evaluation(client):
     now=client.get('/api/astronauts/crew-02/dashboard').json()
     early=client.get('/api/astronauts/crew-02/dashboard',params={'as_of':now['demo_start']}).json()
     assert now['status']=='review' and early['status']=='insufficient_data'
-    assert all(a['n']==1 for a in early['analyses'])
+    # Layer-2 acquisitions are absent until a layer-1 signal requests them.
+    assert all(a['n']==1 for a in early['analyses'] if a['latest'])
+    assert any(a['latest'] is None for a in early['analyses'])
 
 
 def test_exports_preserve_provenance(client):
@@ -109,6 +112,7 @@ def test_exports_preserve_provenance(client):
 def test_export_respects_replay_time(client):
     start=client.get('/api/astronauts/crew-01/dashboard').json()['demo_start']
     result=client.get('/api/astronauts/crew-01/export',params={'as_of':start}).json()
-    assert all(a['n']==1 for a in result['analyses'])
+    sampled=[a for a in result['analyses'] if a['latest']]
+    assert all(a['n']==1 for a in sampled)
     csv=client.get('/api/astronauts/crew-01/export',params={'as_of':start,'format':'csv'}).text
-    assert len(csv.splitlines())==len(result['analyses'])+1
+    assert len(csv.splitlines())==len(sampled)+1

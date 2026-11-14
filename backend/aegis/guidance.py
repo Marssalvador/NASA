@@ -6,7 +6,12 @@ EMERGENCY_SYMPTOMS = {'chest_pain', 'severe_breathlessness', 'loss_of_consciousn
 
 
 class GuidanceEngine:
-    def evaluate(self, analyses, definitions, events):
+    def evaluate(self, analyses, definitions, events, requested=None):
+        """`requested` maps layer-2 metric ids to the pathway reason that justified acquiring them."""
+        requested = requested or {}
+        # A layer-2 acquisition that was never taken and nobody requested is not a data gap.
+        analyses = [a for a in analyses if not (definitions[a.metric_id].sensing_layer == 2 and a.latest is None
+                                                and a.metric_id not in requested)]
         findings, requests, guidance = [], [], []
         emergency = any(e['symptom'] in EMERGENCY_SYMPTOMS for e in events)
         if emergency:
@@ -16,7 +21,7 @@ class GuidanceEngine:
             if a.status == 'stable':
                 continue
             d = definitions[a.metric_id]
-            reason = 'Desviación del patrón personal (heurística |z| ≥ 3).' if a.status == 'review' else {
+            reason = requested.get(d.id) if a.status != 'review' and d.id in requested else 'Desviación del patrón personal (heurística |z| ≥ 3).' if a.status == 'review' else {
                 'stale': 'Medición caducada según la frecuencia de adquisición configurada.',
                 'missing': 'Falta una medición disponible.', 'poor_quality': 'Calidad insuficiente en la última adquisición.',
                 'available': 'Faltan muestras o un baseline previo compatible.'}[a.data_state]

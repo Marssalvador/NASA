@@ -32,8 +32,8 @@ $env:AEGIS_DB_PATH = "$PWD\data\otra-demo.sqlite"
 ## Flujo de la interfaz
 
 1. Seleccionar astronauta: Elena (patrón estable), Alex (desviaciones y adquisiciones pendientes) o Kai (síntoma de emergencia declarado).
-2. Pulsar una región del humanoide o su botón en Sistemas corporales. La lista también sirve para teclado y para la vista 3D.
-3. Seleccionar un biomarcador para ver su evolución. Abrir **Ver análisis y procedencia** para revisar muestras, media, desviación, mediana, MAD, tendencia, baseline, origen e incertidumbre.
+2. Pulsar una región del humanoide o un sistema a la izquierda. La cámara se acerca en 600 ms; Vista general vuelve al cuerpo completo. El ratón permite rotar y la rueda acerca. Los botones inferiores permiten ver la cara posterior y ocultar capas anatómicas.
+3. Pulsar una medición o **Análisis y procedencia** para revisar muestras, media, desviación, mediana, MAD, tendencia, baseline, origen e incertidumbre. **Evolución temporal** abre el gráfico. En la vista ampliada se ofrecen las pestañas Estado, Tendencia y Detalle.
 4. Cambiar el periodo de visualización o reproducir la misión con el control REPLAY. Cada paso consulta nuevamente el backend con as_of; los estados se recalculan sin colores fijados por escenario en React.
 5. Abrir **Hallazgos / Ver todos** para comprobar el motivo, la adquisición sugerida, la referencia disponible, la autorización y el estado de validación.
 6. Exportar resultados JSON desde el botón superior. La exportación CSV de mediciones está en el panel de ayuda (icono ?).
@@ -131,11 +131,32 @@ data/guidance_protocols.json se entrega vacío. Sin protocolo revisado se muestr
 
 Para instalar protocolos revisados, usar el contrato GuidanceProtocol: id, trigger (ID de métrica o emergency), explanation, suggested_check, how_to_measure, reference, authorization_level, validation_status=reviewed, reviewer y reviewed_at con zona horaria. El sistema exige evidencia documental declarada; no puede verificar por sí mismo la legitimidad de una revisión. La semántica de trigger actual es por variable o emergencia global, no un motor arbitrario de reglas clínicas.
 
-## Humanoide y Blender
+## Atlas anatómico y metodología Cutaway
 
-Blender MCP no está disponible en esta sesión. Se entrega el SVG interactivo de Humanoid.tsx y una vista React Three Fiber procedural en Body3D.tsx, ambos sin dependencias remotas. No se ha creado humanoid.glb ni .blend; assets/models/README.md documenta la integración futura.
+La nueva experiencia sustituye por completo el anterior SVG y las primitivas. AnatomyViewer.tsx carga un GLB real de un atlas anatómico, organizado por región, tejido y zona. Se preparó con @gltf-transform y Meshopt a partir de mallas de Z-Anatomy y BodyParts3D 4.0. No se ha solicitado ni generado vídeo. Blender MCP no está conectado y no se generó un .blend; no es necesario para ejecutar el visor.
 
-Para sustituirlo por un modelo propio, guardar assets/models/humanoid.glb con su licencia, copiarlo a frontend/public/models/humanoid.glb durante el build y cargarlo con GLTFLoader/useGLTF desde /models/humanoid.glb. Mantener regiones separadas y nombres region_heart, region_lungs, region_kidneys, region_muscles, region_skeleton, region_brain y region_metabolic. Aplicar los estados a materiales, mapear clics a onSelect y conservar el selector de sistemas accesible y el SVG de reserva. No cargar recursos desde una URL externa. El modelo actual no usa anatomía exacta ni pretende hacerlo.
+El archivo canónico está en assets/models/humanoid.glb y Vite lo copia a frontend/public/models/humanoid.glb antes de servir o construir. El manifest local registra piezas, bounds, nombres originales y exclusiones de licencia. Se mantienen los grupos region_heart, region_lungs, region_kidneys, region_brain, region_skeleton, region_muscles y region_metabolic, con sufijos de tejido/zona. Las extras de cada malla contienen region, tissue y zone. El cuerpo exterior usa piel real del atlas con transparencia; no es una aproximación hecha de primitivas.
+
+Los materiales PBR, luces de estudio y tonos proceden del visor. No hay mapas fotográficos de tejido: el resultado no es fotorealista ni idéntico a las ilustraciones generadas. La anatomía es genérica y educativa; no corresponde a las mediciones, sexo ni anatomía concreta de una persona. No se deforman órganos según una alerta fisiológica. El rojo de la interfaz y del corazón destacado se activa a partir de estados calculados. La selección sin alerta utiliza tonos neutros.
+
+La metodología de Cutaway se adaptó a la aplicación: medición de referencias, checklist previo, componentes con identidad estable, cámara por región y dos rondas de revisión. Las reglas robóticas, verdes y de grabación no aplican al objetivo solicitado. Ver docs/ANATOMY_VISUAL_BRIEF.md y docs/visual-review/REVIEW.md. No existe una imagen previamente aprobada; las comparaciones no simulan esa aprobación.
+
+Las mallas derivadas del atlas se redistribuyen bajo CC BY-SA 4.0; los aportes originales de piel/riñón se acreditan bajo la licencia oficial actual de DBCLS, CC BY 4.0. Se excluyeron los riñones y las estructuras de oído del atlas con excepciones NC antes de crear el GLB. Créditos completos y condiciones: assets/models/ATTRIBUTION.md, Z-Anatomy-LICENSE.txt y CC-BY-SA-4.0.txt. No se importó código de visores de terceros.
+
+Para regenerar (solo desarrollo; la ejecución normal no descarga nada):
+
+```powershell
+.\.venv\Scripts\python scripts/download_anatomy.py
+.\scripts\download_bodyparts.ps1
+.\.venv\Scripts\python scripts/extract_bodyparts.py
+cd frontend
+node scripts/prepare-anatomy.mjs
+npm run build
+```
+
+Los originales descargados viven en assets/models/source/ y no se incluyen en Git. La preparación convierte mm/Z-up a m/Y-up, aplica un desplazamiento rígido verificado con los riñones del atlas, conserva nombres en el manifest, combina piezas por tejido/zona para reducir draw calls y simplifica/comprime las mallas. Los hashes de origen se registran en source-manifest.json. Para sustituir el modelo, conservar las extras y regiones y revisar licencia, bounds y anclas en anatomyConfig.ts.
+
+El render funciona bajo demanda: se dibuja durante carga, interacción, cambios de datos/capas y animaciones. No ejecuta 60 renders por segundo mientras está quieto. La cámara usa easing cúbico de 600 ms, omite animación con prefers-reduced-motion y conserva OrbitControls. El detalle del riñón utiliza una cámara posterior para evitar una localización frontal engañosa. Si falla WebGL, se muestra el error explícito y los datos siguen accesibles; no se coloca una imagen simulando un modelo.
 
 ## Verificación
 
@@ -145,10 +166,12 @@ cd frontend
 npm test
 npm run build
 # Una sola vez para descargar el navegador de pruebas:
-npx playwright install chromium
+npx playwright install chrome
 npm run test:e2e
 ```
 
 Playwright levanta un servidor separado en 8001 con SQLite temporal; no toca data/aegis.sqlite. El servidor de desarrollo y el de pruebas sirven el frontend compilado: ejecutar build después de cambiar código. Las pruebas sin internet bloquean destinos externos y permiten loopback, incluida la carga diferida 3D. Esto verifica independencia de servicios externos; no convierte el sitio en una PWA capaz de funcionar con el backend detenido.
+
+Las pruebas visuales usan Google Chrome instalado y ANGLE/D3D11 en Windows. El headless shell con render por software se mostró inadecuado para el atlas en esta máquina; no se sustituyó el modelo real por un mock para aprobar pruebas. Para las hojas de comparación estáticas se usa Pillow (dependencia auxiliar, no de la aplicación): pip install pillow y python scripts/compare_anatomy.py.
 
 La base de datos local no se cifra y la aplicación no implementa autenticación multiusuario. No hay despliegue en red ni controles para investigación regulada. El modo de uso autorizado en esta versión es demostración e investigación local con datasets apropiados. Las copias de seguridad y las reglas de conservación de datos deberán definirse antes de usar información personal real.
