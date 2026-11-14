@@ -1,0 +1,193 @@
+{
+  "note": "Reglas transcritas de las especificaciones del usuario. Los umbrales son orientativos y relativos a la línea base individual. Ninguna regla está revisada médicamente: toda recomendación se presenta como 'Pendiente de revisión médica'. 'level_source: engine_assumption' marca decisiones que el documento no cuantifica.",
+  "engine_assumptions": {
+    "sustained_days": "Cuando el documento dice 'mantenida' o 'sostenida' sin duración, el motor exige al menos 2 días consecutivos con agregado diario que cumpla la condición.",
+    "repeated_nights": "'De forma repetida' para el sueño: al menos 3 de las últimas 7 noches.",
+    "glucose_window_days": "Las métricas CGM (TIR, CV, % <70, % <54) se calculan sobre una ventana de 7 días.",
+    "deviation_without_numbers": "Si el documento no da cifras ('elevación mantenida respecto al rango personal'), se usa la desviación robusta |z| >= 3 respecto a la referencia inicial durante 2 días."
+  },
+  "protocols": [
+    {
+      "id": "hrv.yellow",
+      "risk_id": "inflammation_recovery",
+      "title": "HRV / FC en reposo: alerta amarilla",
+      "alert_level": "yellow",
+      "level_source": "document",
+      "trigger_rule": { "any": [
+        { "biomarker": "hrv", "feature": "daily_pct_change_vs_initial", "between": [-25, -15], "sustained_days": 2 },
+        { "biomarker": "heart_rate", "feature": "daily_delta_vs_initial", "between": [3, 5], "sustained_days": 2 }
+      ] },
+      "countermeasures": [
+        { "category": "exercise", "text": "Reducir volumen/intensidad 20-30% (24-48 h). Recuperación activa." },
+        { "category": "nutritional", "text": "CH + proteína post-esfuerzo. Evitar déficit calórico." },
+        { "category": "pharmacological", "text": "Melatonina si hay sueño pobre asociado." }
+      ],
+      "source_document": "kb 2.1"
+    },
+    {
+      "id": "hrv.orange",
+      "risk_id": "inflammation_recovery",
+      "title": "HRV / FC en reposo: alerta naranja",
+      "alert_level": "orange",
+      "level_source": "document",
+      "trigger_rule": { "any": [
+        { "biomarker": "hrv", "feature": "daily_pct_change_vs_initial", "between": [-40, -25], "sustained_days": 2 },
+        { "biomarker": "heart_rate", "feature": "daily_delta_vs_initial", "between": [5, 8], "sustained_days": 2 }
+      ] },
+      "countermeasures": [
+        { "category": "exercise", "text": "Reducción 40-60% o día de descarga. Evitar alta intensidad." },
+        { "category": "nutritional", "text": "Superávit calórico moderado + más CH y proteína. Electrolitos." },
+        { "category": "pharmacological", "text": "Melatonina. Limitar estimulantes." }
+      ],
+      "source_document": "kb 2.1"
+    },
+    {
+      "id": "hrv.red",
+      "risk_id": "inflammation_recovery",
+      "title": "HRV: alerta roja (posible overreaching)",
+      "alert_level": "red",
+      "level_source": "document",
+      "trigger_rule": { "all": [
+        { "biomarker": "hrv", "feature": "daily_pct_change_vs_initial", "below": -40, "sustained_days": 2 },
+        { "symptom_any": ["fatigue", "malaise"] }
+      ] },
+      "countermeasures": [
+        { "category": "exercise", "text": "Parar entrenamiento intenso. Solo recuperación." },
+        { "category": "nutritional", "text": "Priorizar energía y sueño." },
+        { "category": "pharmacological", "text": "Melatonina." },
+        { "category": "escalation", "text": "Escalar a médico de vuelo si no mejora en 48-72 h." }
+      ],
+      "source_document": "kb 2.1"
+    },
+    {
+      "id": "temperature.yellow",
+      "risk_id": "inflammation_recovery",
+      "title": "Temperatura: elevación sostenida 0,5-0,8 °C",
+      "alert_level": "yellow",
+      "level_source": "document",
+      "trigger_rule": { "biomarker": "temperature", "feature": "daily_delta_vs_initial", "between": [0.5, 0.8], "sustained_days": 2, "cycle_aware": true },
+      "countermeasures": [
+        { "category": "nutritional", "text": "Aumentar hidratación + electrolitos." },
+        { "category": "exercise", "text": "Reducir carga térmica del ejercicio." },
+        { "category": "pharmacological", "text": "Observar; paracetamol si aparece molestia." }
+      ],
+      "source_document": "kb 2.3"
+    },
+    {
+      "id": "temperature.orange",
+      "risk_id": "inflammation_recovery",
+      "title": "Temperatura ≥38,0 °C o >0,8 °C sostenida",
+      "alert_level": "orange",
+      "level_source": "document",
+      "trigger_rule": { "any": [
+        { "biomarker": "temperature", "feature": "latest_value", "at_least": 38.0 },
+        { "biomarker": "temperature", "feature": "daily_delta_vs_initial", "above": 0.8, "sustained_days": 2, "cycle_aware": true }
+      ] },
+      "escalate_to_red_if_symptom": ["malaise", "chills"],
+      "countermeasures": [
+        { "category": "nutritional", "text": "Hidratación agresiva." },
+        { "category": "exercise", "text": "Suspender ejercicio." },
+        { "category": "pharmacological", "text": "Paracetamol o ibuprofeno." },
+        { "category": "escalation", "text": "Escalar a médico de vuelo. Valorar infección." }
+      ],
+      "source_document": "kb 2.3 (naranja/roja: roja si hay malestar o escalofríos)"
+    },
+    {
+      "id": "glucose.variability",
+      "risk_id": null,
+      "title": "Glucosa: alta variabilidad",
+      "alert_level": "yellow",
+      "level_source": "engine_assumption",
+      "trigger_rule": { "any": [
+        { "biomarker": "glucose", "feature": "cgm_cv_pct_7d", "above": 36 },
+        { "biomarker": "glucose", "feature": "cgm_tir_pct_7d", "between": [50, 70] }
+      ] },
+      "countermeasures": [
+        { "category": "nutritional", "text": "Repartir CH, comidas mixtas (proteína/grasa). Evitar picos de CH simples." },
+        { "category": "exercise", "text": "Evitar ejercicio intenso con glucosa muy baja o muy alta." }
+      ],
+      "source_document": "kb 2.4"
+    },
+    {
+      "id": "glucose.hyperglycemia",
+      "risk_id": null,
+      "title": "Glucosa: hiperglucemia (TIR < 50%)",
+      "alert_level": "orange",
+      "level_source": "engine_assumption",
+      "trigger_rule": { "biomarker": "glucose", "feature": "cgm_tir_pct_7d", "below": 50 },
+      "countermeasures": [
+        { "category": "nutritional", "text": "Revisar cantidad/tipo de CH. Más fibra y proteína." },
+        { "category": "exercise", "text": "Ejercicio moderado puede mejorar sensibilidad (si no hay contraindicación)." }
+      ],
+      "source_document": "kb 2.4"
+    },
+    {
+      "id": "glucose.hypoglycemia",
+      "risk_id": null,
+      "title": "Glucosa: hipoglucemia frecuente",
+      "alert_level": "orange",
+      "level_source": "engine_assumption",
+      "trigger_rule": { "biomarker": "glucose", "feature": "cgm_below70_pct_7d", "at_least": 4 },
+      "countermeasures": [
+        { "category": "nutritional", "text": "Reducir ayunos. CH de absorción media antes de esfuerzo. Tener CH rápidos disponibles." },
+        { "category": "exercise", "text": "No entrenar intenso con glucosa baja." }
+      ],
+      "source_document": "kb 2.4"
+    },
+    {
+      "id": "sleep.insufficient",
+      "risk_id": "inflammation_recovery",
+      "title": "Sueño insuficiente repetido (< 6 h)",
+      "alert_level": "yellow",
+      "level_source": "engine_assumption",
+      "trigger_rule": { "biomarker": "sleep", "feature": "nights_below_6h_of_7", "at_least": 3 },
+      "countermeasures": [
+        { "category": "exercise", "text": "Reducir volumen de ejercicio al día siguiente." },
+        { "category": "nutritional", "text": "Evitar cafeína desde media tarde. Cena adecuada." },
+        { "category": "pharmacological", "text": "Melatonina (1ª línea, 30-60 min antes de dormir)." }
+      ],
+      "source_document": "kb 2.9"
+    },
+    {
+      "id": "lactate.poor_recovery",
+      "risk_id": "inflammation_recovery",
+      "title": "Lactato en reposo elevado de forma mantenida",
+      "alert_level": "yellow",
+      "level_source": "engine_assumption",
+      "trigger_rule": { "biomarker": "lactate", "feature": "daily_robust_z_vs_initial", "above": 3, "sustained_days": 2 },
+      "countermeasures": [
+        { "category": "exercise", "text": "Día de descarga o reducción clara de intensidad." },
+        { "category": "nutritional", "text": "Más CH y proteína. Revisar hidratación y energía total. Apoyo a sueño." }
+      ],
+      "source_document": "kb 2.6"
+    },
+    {
+      "id": "eda.sympathetic_load",
+      "risk_id": "inflammation_recovery",
+      "title": "Activación simpática elevada mantenida",
+      "alert_level": "yellow",
+      "level_source": "engine_assumption",
+      "trigger_rule": { "all": [
+        { "biomarker": "eda", "feature": "daily_robust_z_vs_initial", "above": 3, "sustained_days": 2 },
+        { "any": [
+          { "biomarker": "hrv", "feature": "daily_pct_change_vs_initial", "below": -15, "sustained_days": 2 },
+          { "biomarker": "sleep", "feature": "nights_below_6h_of_7", "at_least": 3 }
+        ] }
+      ] },
+      "countermeasures": [
+        { "category": "exercise", "text": "Reducir carga si hay fatiga asociada." },
+        { "category": "monitoring", "text": "Higiene de sueño. Técnicas de regulación del estrés. Combinar con HRV para confirmar carga autonómica." },
+        { "category": "pharmacological", "text": "Melatonina si el sueño está afectado." }
+      ],
+      "source_document": "kb 2.8"
+    }
+  ],
+  "emergency_rules": [
+    { "id": "emergency.fever_malaise", "title": "Fiebre alta + malestar", "rule": { "all": [ { "biomarker": "temperature", "feature": "latest_value", "at_least": 38.0 }, { "symptom_any": ["malaise", "chills"] } ] }, "source_document": "kb 1, 5" },
+    { "id": "emergency.severe_hypoglycemia", "title": "Hipoglucemia severa", "rule": { "biomarker": "glucose", "feature": "latest_value", "below": 54 }, "level_source": "engine_assumption", "source_document": "kb 1, 2.4, 5" },
+    { "id": "emergency.arrhythmia", "title": "Arritmia sostenida declarada", "rule": { "symptom_any": ["arrhythmia", "chest_pain", "syncope"] }, "source_document": "kb 2.2, 5" },
+    { "id": "emergency.ketoacidosis_signs", "title": "Signos de cetoacidosis", "rule": { "symptom_any": ["ketoacidosis_signs"] }, "source_document": "kb 2.5, 3.5" },
+    { "id": "emergency.renal_colic", "title": "Dolor lumbar / flanco o hematuria", "rule": { "symptom_any": ["flank_pain", "hematuria"] }, "source_document": "kb 3.2" },
+    { "id": "emergency.menstrual", "title": "Dolor intenso o sangrado muy abundante", "rule": { "symptom_any": ["severe_pain", "heavy_bleeding"] }, "source_document": "cycle 5" }
+  ]
+}

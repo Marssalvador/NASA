@@ -1,0 +1,85 @@
+{
+  "source_documents": {
+    "spec": "Sistema_Monitorizacion_Predictiva_Astronautas.docx (NASA Space Apps, nov. 2026)",
+    "kb": "Base de conocimiento ampliada para entrenamiento de la IA (AEGIS, nov. 2026)",
+    "cycle": "Consideraciones específicas para mujeres con ciclo activo (AEGIS, nov. 2026)"
+  },
+  "risks": [
+    {
+      "id": "bone_resorption",
+      "name": "Alteración de la remodelación ósea",
+      "description": "Riesgo de resorción ósea elevada en microgravedad.",
+      "body_region": "skeleton",
+      "criteria": "Baja actividad de fuerza + HRV deteriorada + fase hormonal desfavorable + posible deshidratación (spec 3.1, kb 3.1). Medición activada: CTX-I (± P1NP).",
+      "source_document": "spec",
+      "validation_status": "design_hypothesis",
+      "links": [
+        { "biomarker": "resistive_exercise_minutes", "role": "trigger", "rationale": "Carga de ejercicio resistivo insuficiente de forma prolongada." },
+        { "biomarker": "hrv", "role": "trigger", "rationale": "HRV deteriorada / mala recuperación." },
+        { "biomarker": "sweat_sodium", "role": "context", "rationale": "Indicio de deshidratación o pérdida electrolítica." },
+        { "biomarker": "estradiol", "role": "modifier", "rationale": "Fase hormonal: los estrógenos tienen efecto protector óseo (cycle 3.8)." },
+        { "biomarker": "progesterone", "role": "modifier", "rationale": "Identificación de la fase lútea (cycle 2.4)." },
+        { "biomarker": "ctx_i", "role": "confirmation", "rationale": "Marcador de resorción ósea (spec 4)." },
+        { "biomarker": "p1np", "role": "confirmation", "rationale": "Marcador de formación ósea (spec 4)." },
+        { "biomarker": "vitamin_d", "role": "context", "rationale": "Revisión de calcio/vitamina D como contramedida (spec 3.1)." }
+      ]
+    },
+    {
+      "id": "renal_stones",
+      "name": "Riesgo de formación de cálculos renales",
+      "description": "Hipercalciuria ligada a resorción ósea, deshidratación y desequilibrio electrolítico.",
+      "body_region": "kidneys",
+      "criteria": "Hidratación insuficiente + desequilibrio electrolítico + indicios de movilización ósea + bajo volumen urinario o pH alterado (spec 3.2, kb 3.2). Medición activada: perfil urinario.",
+      "source_document": "spec",
+      "validation_status": "design_hypothesis",
+      "links": [
+        { "biomarker": "sweat_sodium", "role": "trigger", "rationale": "Desequilibrio electrolítico / deshidratación." },
+        { "biomarker": "sweat_potassium", "role": "trigger", "rationale": "Desequilibrio electrolítico." },
+        { "biomarker": "sweat_ph", "role": "trigger", "rationale": "pH del sudor alterado de forma recurrente (kb 2.7)." },
+        { "biomarker": "ctx_i", "role": "trigger", "rationale": "Indicio de movilización ósea." },
+        { "biomarker": "urinary_calcium", "role": "confirmation", "rationale": "Perfil urinario: calcio." },
+        { "biomarker": "urine_ph", "role": "confirmation", "rationale": "Perfil urinario: pH." },
+        { "biomarker": "creatinine", "role": "confirmation", "rationale": "Perfil urinario: creatinina / función renal." },
+        { "biomarker": "urinary_citrate", "role": "confirmation", "rationale": "Perfil urinario: citrato si está disponible." }
+      ]
+    },
+    {
+      "id": "inflammation_recovery",
+      "name": "Alteración inflamatoria, inmunitaria o de recuperación",
+      "description": "Inflamación, infección o sobreentrenamiento / fatiga acumulada.",
+      "body_region": "metabolic",
+      "criteria": "Cortisol elevado mantenido + HRV baja + sueño fragmentado + lactato de recuperación lento; temperatura elevada + FC en reposo alta + malestar (spec 3.3, kb 3.3-3.4). Medición activada: IL-6 / PCR.",
+      "source_document": "spec",
+      "validation_status": "design_hypothesis",
+      "links": [
+        { "biomarker": "cortisol_sweat", "role": "trigger", "rationale": "Cortisol elevado de forma mantenida / pérdida de ritmo circadiano." },
+        { "biomarker": "hrv", "role": "trigger", "rationale": "HRV baja." },
+        { "biomarker": "sleep", "role": "trigger", "rationale": "Sueño insuficiente." },
+        { "biomarker": "sleep_efficiency", "role": "trigger", "rationale": "Sueño fragmentado." },
+        { "biomarker": "lactate", "role": "trigger", "rationale": "Lactato de recuperación lento o reposo alto." },
+        { "biomarker": "temperature", "role": "trigger", "rationale": "Temperatura elevada (posible proceso inflamatorio o infeccioso)." },
+        { "biomarker": "heart_rate", "role": "trigger", "rationale": "FC en reposo elevada." },
+        { "biomarker": "eda", "role": "context", "rationale": "Activación simpática mantenida (señal de apoyo)." },
+        { "biomarker": "il6", "role": "confirmation", "rationale": "Marcador inflamatorio." },
+        { "biomarker": "crp", "role": "confirmation", "rationale": "Marcador inflamatorio." }
+      ]
+    },
+    {
+      "id": "cardiovascular_orthostatic",
+      "name": "Alteración cardiovascular u ortostática",
+      "description": "Desacondicionamiento cardiovascular e intolerancia ortostática.",
+      "body_region": "heart",
+      "criteria": "FC en reposo elevada + HRV baja + cambios de temperatura + hidratación alterada (spec 3.4). Medición activada: presión arterial y evaluación según protocolo de misión.",
+      "source_document": "spec",
+      "validation_status": "design_hypothesis",
+      "links": [
+        { "biomarker": "heart_rate", "role": "trigger", "rationale": "FC en reposo elevada." },
+        { "biomarker": "hrv", "role": "trigger", "rationale": "HRV baja." },
+        { "biomarker": "temperature", "role": "trigger", "rationale": "Cambios de temperatura." },
+        { "biomarker": "sweat_sodium", "role": "context", "rationale": "Hidratación alterada." },
+        { "biomarker": "systolic_bp", "role": "confirmation", "rationale": "Estado hemodinámico." },
+        { "biomarker": "diastolic_bp", "role": "confirmation", "rationale": "Estado hemodinámico." }
+      ]
+    }
+  ]
+}

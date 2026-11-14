@@ -1,0 +1,43 @@
+{
+  "source_document": "Consideraciones específicas para mujeres con ciclo activo (AEGIS, nov. 2026)",
+  "applies_when": { "sex": "female", "cycle_status": "active" },
+  "reference_cycle_days": 28,
+  "phase_estimation": "Día de ciclo = días desde el último evento menstruation_start + 1. Con duración habitual distinta de 28 días se escala proporcionalmente al ciclo de referencia (supuesto del motor). Sin evento reciente, fase 'unknown' y no se aplican ajustes.",
+  "phases": [
+    { "id": "menstrual", "from_day": 1, "to_day": 5 },
+    { "id": "follicular", "from_day": 6, "to_day": 13 },
+    { "id": "ovulatory", "from_day": 14, "to_day": 14 },
+    { "id": "luteal", "from_day": 15, "to_day": 28 }
+  ],
+  "premenstrual_last_days": 5,
+  "modifiers": [
+    {
+      "biomarker": "temperature",
+      "phase": "luteal",
+      "rule": "Línea base propia de la fase lútea cuando exista; si no, tolerar +0,5 °C sobre la referencia antes de evaluar la regla de temperatura. Siempre alertar a partir de 38,0 °C.",
+      "tolerance_delta": 0.5,
+      "separate_baseline": true,
+      "source": "cycle 3.1, 5"
+    },
+    {
+      "biomarker": "hrv",
+      "phase": "luteal",
+      "rule": "HRV puede bajar 5-15%: si solo existe la referencia global, desplazar los umbrales de caída 15 puntos porcentuales antes de alertar.",
+      "tolerance_pct": 15,
+      "separate_baseline": true,
+      "source": "cycle 3.2, 5"
+    },
+    {
+      "biomarker": "heart_rate",
+      "phase": "luteal",
+      "rule": "La FC en reposo puede subir ligeramente; se usa la línea base lútea si existe. El documento no cuantifica la tolerancia.",
+      "separate_baseline": true,
+      "source": "cycle 3.2"
+    }
+  ],
+  "suppressed_cycle": "Con ciclo suprimido o no aplicable se usa una única línea base y los umbrales estándar (cycle 6).",
+  "invariants": [
+    "La protección ósea (calcio, vitamina D, ejercicio resistivo) y la hidratación/riesgo renal no se relajan en ninguna fase (cycle 3.8, 3.9, 7).",
+    "Dolor intenso, sangrado muy abundante o síntomas nuevos e intensos se escalan a médico de vuelo (cycle 5)."
+  ]
+}
