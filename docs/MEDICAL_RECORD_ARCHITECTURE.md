@@ -123,3 +123,22 @@ antes de llegar al router (no implementado en este demostrador).
 * Prueba de integración Postgres: `AEGIS_DATABASE_URL=… pytest tests/test_medical_postgres.py` (se omite sin la variable).
 * Pendiente: conceder accesos reales (`astronaut_access`) a usuarios de Supabase Auth, verificación del JWT en la
   API, conexión del frontend a `/api/v2` y revisión médica de los protocolos.
+
+## 9. Verificación adicional de PostgreSQL — conexión pendiente
+
+La comprobación del 14 de noviembre no encontró `AEGIS_DATABASE_URL` en el proceso, las variables de usuario o sistema de Windows, ni en los archivos `.env` habituales. Por ello **no se estableció una conexión real, no se verificaron de nuevo las migraciones remotas y no se ejecutó el recorrido en Supabase**. Las afirmaciones anteriores sobre pruebas SQL corresponden a la fase previa documentada; no se han vuelto a comprobar en esta ejecución.
+
+Se corrigieron problemas encontrados en la revisión y cubiertos por regresiones locales:
+
+- El repositorio de cada solicitud conserva una identidad independiente: las lecturas de mediciones, eventos, referencias, evaluaciones y solicitudes también usan `authenticated`, no solo la consulta inicial de permisos. Los resultados internos del motor usan explícitamente `service_role`, como requieren las políticas existentes.
+- Registrar el resultado de una prueba exige permiso de médico de vuelo y escritura, antes de insertar mediciones. Las actualizaciones que RLS deja sin filas ya no se consideran exitosas.
+- La API de correcciones selecciona la medición solicitada de la cadena, conservando la original.
+- Los errores al abrir una conexión no exponen el mensaje del controlador, que podría contener la URL. Las conexiones tienen un tiempo máximo de establecimiento de 12 segundos.
+
+`scripts/verify-postgres.ps1` lee la variable del proceso o del usuario sin imprimirla y ejecuta la prueba PostgreSQL anterior y `tests/test_medical_postgres_workflow.py`. Se detiene con error si falta la variable; nunca sustituye esta comprobación por el modo en memoria.
+
+La nueva suite real está preparada para verificar TLS, las cinco versiones de migración, RLS en las tablas y persistencia de A-112; recorrer importación, tendencia, evaluación, prueba y reevaluación mediante el router real `/api/v2`; recargar los resultados desde conexiones independientes; y demostrar lecturas vacías/inserciones denegadas con `authenticated`, `rolsuper=false`, `rolbypassrls=false`. Usa transporte ASGI de pruebas hacia PostgreSQL real, no un servidor HTTP público. **Nada de esto se considera superado hasta ejecutar con una conexión válida.**
+
+La suite añade usuarios ficticios `@aegis.invalid` sin contraseñas, permisos explícitos y dos expedientes sintéticos `Z-NNN`, además de nuevas evaluaciones/referencias/solicitudes para el A-112 existente. El recorrido de inserción y resultado se realiza sobre una copia sintética para conservar intactas sus mediciones originales. Esos datos se conservan etiquetados para verificar persistencia; no hay limpieza destructiva, cambios de esquema ni cambios en migraciones. Si supera las pruebas, guarda identificadores y contadores, sin credenciales, en `docs/verification/postgres-live.json`.
+
+Sigue pendiente verificar JWT: `X-AEGIS-User` es una identidad de desarrollo. Que las consultas usen RLS no autentica por sí solo al titular de esa cabecera. Tampoco se ha conectado la interfaz a `/api/v2`.

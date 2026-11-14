@@ -274,3 +274,59 @@ def test_api_import_is_atomic_and_detects_duplicates(api):
     response = api.post('/api/v2/astronauts/A-112/measurements', json={**body, 'content': mixed}, headers=a112)
     assert response.status_code == 422
     assert api.post('/api/v2/astronauts/A-112/measurements', json=body | {'content': good}, headers={'X-AEGIS-User': 'user-a113'}).status_code == 404
+
+
+def test_api_correction_returns_the_requested_measurement_and_keeps_original(api):
+    headers = {'X-AEGIS-User': 'user-a112'}
+    record = api.get('/api/v2/astronauts/A-112/record', headers=headers).json()
+    link = next(item['href'] for item in record['latest'] if item['biomarker_id'] == 'hrv')
+    original = api.get(link, headers=headers).json()['current']
+    response = api.post(link + '/corrections', headers=headers,
+                        json={'value': 49.5, 'reason': 'Synthetic transcription correction'})
+    assert response.status_code == 200
+    chain = api.get(link, headers=headers).json()
+    assert chain['versions'][0]['value'] == original['value']
+    assert chain['current']['value'] == 49.5
+    assert chain['current']['supersedes_id'] == original['id']
+
+
+def test_api_result_requires_flight_surgeon_before_persisting_anything(api):
+    headers = {'X-AEGIS-User': 'user-a112'}
+    report = api.post('/api/v2/astronauts/A-112/evaluations', params={'as_of': AS_OF.isoformat()}, headers=headers).json()
+    request = next(t for assessment in report['assessments'] for t in assessment['test_requests'] if t['biomarker_id'] == 'ctx_i')
+    repo = app.state.medical.repo
+    before = len(repo.observations(synthetic.A112))
+    path = f'/api/v2/test-requests/{request["id"]}/result'
+    body = {'value': .52, 'unit': 'ng/mL', 'measured_at': AS_OF.isoformat(), 'source': 'synthetic lab', 'is_synthetic': True}
+    assert api.post(path, json=body, headers=headers).status_code == 403
+    assert len(repo.observations(synthetic.A112)) == before
+    assert repo.request(request['id']).status == 'proposed'
+    allowed = api.post(path, json=body, headers={'X-AEGIS-User': 'surgeon-1'})
+    assert allowed.status_code == 200
+    assert allowed.json()['reevaluation']['certainty'] == 'confirmed_finding'
+
+
+def test_postgres_request_identity_never_mutates_the_shared_repository():
+    import uuid
+    from starlette.requests import Request
+    from backend.aegis.medical import api as routes
+    from backend.aegis.medical.repository import PostgresRepository
+    service = Engine(PostgresRepository('unused: no connection attempted'))
+    fake_app = type('App', (), {'state': type('State', (), {'medical': service})()})()
+    users = [str(uuid.uuid4()), str(uuid.uuid4())]
+    engines = [routes._engine(Request({'type': 'http', 'headers': [(b'x-aegis-user', user.encode())], 'app': fake_app})) for user in users]
+    assert [engine.repo._user for engine in engines] == users
+    assert service.repo._user is None
+    assert engines[0].repo is not engines[1].repo
+
+
+def test_postgres_connection_failure_does_not_disclose_credentials(monkeypatch):
+    import psycopg
+    from backend.aegis.medical.repository import PostgresRepository
+    def failure(*args, **kwargs):
+        raise psycopg.ProgrammingError('invalid DSN containing synthetic-private-password')
+    monkeypatch.setattr(psycopg, 'connect', failure)
+    with pytest.raises(ConnectionError) as caught:
+        PostgresRepository('unused').accessible('user')
+    assert 'synthetic-private-password' not in str(caught.value)
+    assert 'ProgrammingError' in str(caught.value)

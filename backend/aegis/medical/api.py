@@ -31,7 +31,14 @@ def build_services() -> Engine:
 def _engine(request: Request) -> Engine:
     if not hasattr(request.app.state, 'medical'):
         request.app.state.medical = build_services()
-    return request.app.state.medical
+    engine = request.app.state.medical
+    if isinstance(engine.repo, PostgresRepository):
+        try:
+            repo = engine.repo.for_user(request.headers.get('X-AEGIS-User', ''))
+        except ValueError:
+            raise HTTPException(422, 'La identidad de desarrollo debe ser un UUID válido.')
+        return Engine(repo, engine.knowledge, engine.adapter)
+    return engine
 
 
 def _profile(engine: Engine, code: str, user: str, write: bool = False):
@@ -135,7 +142,8 @@ class CorrectionBody(BaseModel):
 @router.post('/measurements/{measurement_id}/corrections')
 def correct(measurement_id: int, body: CorrectionBody, request: Request, user: str = Header(alias='X-AEGIS-User')):
     engine = _engine(request)
-    original = _visible_measurement(engine, measurement_id, user, write=True)[0]
+    chain, _ = _visible_measurement(engine, measurement_id, user, write=True)
+    original = next(o for o in chain if o.id == measurement_id)
     new_id = engine.repo.correct_observation(original.id, body.value, body.quality, body.reason, user)
     return {'id': new_id, 'supersedes': original.id, 'href': _link(new_id)}
 
@@ -191,6 +199,8 @@ def test_result(request_id: str, body: ResultBody, request: Request, user: str =
         raise HTTPException(404, 'Solicitud no encontrada.')
     profile = engine.repo.profile_by_id(test.astronaut_id)
     _profile(engine, profile.code, user, write=True)
+    if not engine.repo.can_decide_request(profile.id, user):
+        raise HTTPException(403, 'Registrar un resultado requiere permiso de médico de vuelo con escritura.')
     try:
         outcome = engine.record_test_result(request_id, body.model_dump(), actor=user)
     except ValueError as error:

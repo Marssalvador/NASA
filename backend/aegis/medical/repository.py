@@ -7,6 +7,7 @@
   writes run with the service connection.
 """
 from dataclasses import replace
+from copy import copy
 from datetime import datetime
 import itertools
 import json
@@ -42,6 +43,7 @@ class Repository:
     def save_request(self, request: TestRequest) -> TestRequest: raise NotImplementedError
     def requests(self, astronaut_id: str) -> list[TestRequest]: raise NotImplementedError
     def request(self, request_id: str) -> TestRequest: raise NotImplementedError
+    def can_decide_request(self, astronaut_id: str, user: str) -> bool: raise NotImplementedError
     def update_request(self, request: TestRequest, actor: str | None) -> TestRequest: raise NotImplementedError
 
 
@@ -184,6 +186,10 @@ class InMemoryRepository(Repository):
     def request(self, request_id):
         return self._requests[request_id]
 
+    def can_decide_request(self, astronaut_id, user):
+        grant = self._grants.get((user, astronaut_id))
+        return bool(grant and not grant['revoked'] and grant['role'] == 'flight_surgeon' and grant['can_write'])
+
     def update_request(self, request, actor):
         if request.status == 'resulted' and request.result_measurement_id is None:
             raise ValueError('Una solicitud con resultado necesita la medición asociada.')
@@ -203,14 +209,34 @@ class PostgresRepository(Repository):
     def __init__(self, dsn: str):
         import psycopg
         from psycopg.rows import dict_row
-        self._connect = lambda: psycopg.connect(dsn, row_factory=dict_row, autocommit=False)
+        def connect():
+            try:
+                return psycopg.connect(dsn, row_factory=dict_row, autocommit=False, connect_timeout=12)
+            except psycopg.Error as error:
+                # Driver errors for malformed URLs may echo credentials. Do not expose them.
+                raise ConnectionError(f'PostgreSQL connection failed ({type(error).__name__}); connection details suppressed.') from None
+        self._connect = connect
+        self._user = None
 
-    def _run(self, sql: str, params=(), user: str | None = None, fetch: str = 'all'):
+    def for_user(self, user: str):
+        """Independent request scope: never mutate the shared service repository."""
+        scoped = copy(self)
+        scoped._user = str(uuid.UUID(user))
+        return scoped
+
+    @staticmethod
+    def _set_role(cur, user: str | None, service: bool = False):
+        if service:
+            # Engine-output tables intentionally have no authenticated INSERT policy.
+            cur.execute('set local role service_role')
+        elif user is not None:
+            cur.execute("select set_config('request.jwt.claims', %s, true)",
+                        (json.dumps({'sub': user, 'role': 'authenticated'}),))
+            cur.execute('set local role authenticated')
+
+    def _run(self, sql: str, params=(), user: str | None = None, fetch: str = 'all', *, service: bool = False):
         with self._connect() as conn, conn.cursor() as cur:
-            if user is not None:
-                cur.execute("select set_config('request.jwt.claims', %s, true)",
-                            (json.dumps({'sub': user, 'role': 'authenticated'}),))
-                cur.execute('set local role authenticated')
+            self._set_role(cur, user if user is not None else self._user, service)
             cur.execute(sql, params)
             result = cur.fetchall() if fetch == 'all' else cur.fetchone() if fetch == 'one' else None
             conn.commit()
@@ -241,7 +267,10 @@ class PostgresRepository(Repository):
         return self._profile(row)
 
     def profile_by_id(self, astronaut_id):
-        return self._profile(self._run('select * from aegis.astronauts where id = %s', (astronaut_id,), fetch='one'))
+        row = self._run('select * from aegis.astronauts where id = %s', (astronaut_id,), fetch='one')
+        if row is None:
+            raise AccessDenied('Sin permiso explícito sobre este expediente.')
+        return self._profile(row)
 
     def observations(self, astronaut_id, until=None, include_superseded=False):
         table = 'aegis.measurements' if include_superseded else 'aegis.current_measurements'
@@ -273,6 +302,7 @@ class PostgresRepository(Repository):
     def append_observations(self, rows, actor):
         from psycopg.types.json import Jsonb
         with self._connect() as conn, conn.cursor() as cur:
+            self._set_role(cur, self._user)
             ids = []
             for row in rows:
                 cur.execute('insert into aegis.measurements (astronaut_id, biomarker_id, unit, value, measured_at, source, '
@@ -314,7 +344,7 @@ class PostgresRepository(Repository):
                         (astronaut_id, baseline.biomarker_id, baseline.kind, baseline.context_key, baseline.method,
                          baseline.status, baseline.n, baseline.center, baseline.spread, baseline.window_start,
                          baseline.window_end, version, latest['id'] if latest else None, engine_version,
-                         list(baseline.input_ids), baseline.is_synthetic), fetch='one')
+                         list(baseline.input_ids), baseline.is_synthetic), fetch='one', service=True)
         return replace(baseline, id=row['id'], version=version, parent_id=latest['id'] if latest else None)
 
     def baselines(self, astronaut_id):
@@ -327,6 +357,7 @@ class PostgresRepository(Repository):
 
     def save_features(self, astronaut_id, run_id, features, engine_version):
         with self._connect() as conn, conn.cursor() as cur:
+            self._set_role(cur, None, service=True)
             cur.executemany('insert into aegis.derived_features (astronaut_id, biomarker_id, feature, window_start, '
                             'window_end, value, n, quality, run_id, engine_version, input_measurement_ids) '
                             'values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
@@ -350,7 +381,7 @@ class PostgresRepository(Repository):
                          assessment.alert_level, assessment.certainty, Jsonb(assessment.result),
                          Jsonb(assessment.uncertainty), assessment.input_quality, Jsonb(assessment.inputs_used),
                          assessment.missing_inputs, assessment.evidence_ids, Jsonb(assessment.context),
-                         assessment.explanation, assessment.reproducibility_hash, assessment.supersedes_id), fetch='one')
+                         assessment.explanation, assessment.reproducibility_hash, assessment.supersedes_id), fetch='one', service=True)
         return replace(assessment, id=str(row['id']))
 
     def assessments(self, astronaut_id):
@@ -370,7 +401,7 @@ class PostgresRepository(Repository):
         row = self._run('insert into aegis.test_requests (astronaut_id, assessment_id, biomarker_id, reason, status) '
                         'values (%s,%s,%s,%s,%s) returning id',
                         (request.astronaut_id, request.assessment_id, request.biomarker_id, request.reason,
-                         request.status), fetch='one')
+                         request.status), fetch='one', service=True)
         return replace(request, id=str(row['id']))
 
     @staticmethod
@@ -386,11 +417,21 @@ class PostgresRepository(Repository):
                                                     'order by requested_at', (astronaut_id,))]
 
     def request(self, request_id):
-        return self._request(self._run('select * from aegis.test_requests where id = %s', (request_id,), fetch='one'))
+        row = self._run('select * from aegis.test_requests where id = %s', (request_id,), fetch='one')
+        if row is None:
+            raise KeyError(request_id)
+        return self._request(row)
+
+    def can_decide_request(self, astronaut_id, user):
+        row = self._run('select aegis.is_flight_surgeon(%s) and aegis.can_write(%s) as allowed',
+                        (astronaut_id, astronaut_id), user=user, fetch='one')
+        return bool(row['allowed'])
 
     def update_request(self, request, actor):
-        self._run('update aegis.test_requests set status = %s, result_measurement_id = %s, '
-                  'reevaluation_assessment_id = %s, decided_by = coalesce(%s, decided_by), updated_at = now() where id = %s',
+        row = self._run('update aegis.test_requests set status = %s, result_measurement_id = %s, '
+                  'reevaluation_assessment_id = %s, decided_by = coalesce(%s, decided_by), updated_at = now() where id = %s returning id',
                   (request.status, request.result_measurement_id, request.reevaluation_assessment_id, actor, request.id),
-                  fetch=None)
+                  fetch='one')
+        if row is None:
+            raise AccessDenied('Sin permiso para decidir esta solicitud.')
         return request

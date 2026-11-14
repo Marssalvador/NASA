@@ -1,5 +1,9 @@
 # AEGIS · Estado de implementación
 
+## Comprobación del backend médico contra Supabase (pendiente de conexión)
+
+Última suite local: **80 pruebas superadas, 4 de PostgreSQL omitidas** porque `AEGIS_DATABASE_URL` no está configurada. No hay evidencia nueva de conexión a Supabase, persistencia remota ni recorrido completo contra PostgreSQL. Se corrigió el alcance RLS de las consultas por solicitud, la autorización previa al registro de resultados y un fallo en la API de correcciones. Las migraciones y la interfaz no se modificaron. Recorrido real y limitaciones documentados en `docs/MEDICAL_RECORD_ARCHITECTURE.md`, sección 9. Ejecutar `scripts/verify-postgres.ps1` cuando la variable local esté disponible; no imprime credenciales.
+
 Versión local 0.1.0 · Actualización anatómica y verificación: 14 de noviembre de 2026.
 
 El flujo completo está implementado y probado: selección de astronauta, gemelo interactivo, registro dinámico, importación, SQLite, análisis personal, incertidumbre, hallazgos, comprobaciones y replay. La aplicación se sirve desde http://127.0.0.1:8000. No se ha publicado ni conectado a servicios cloud.
