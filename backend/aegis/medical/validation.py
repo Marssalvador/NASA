@@ -36,6 +36,9 @@ def validate(rows: list[dict], astronaut_id: str, knowledge: Knowledge, existing
                 value = float(value)
                 if not math.isfinite(value):
                     raise ValueError('valor no finito')
+                allowed_values = biomarker.get('allowed_values')
+                if allowed_values is not None and value not in allowed_values:
+                    raise ValueError(f"valor {value:g} no permitido; opciones: {allowed_values}")
             if (value is None) != (quality == 'missing'):
                 raise ValueError('un valor vacío requiere quality=missing y viceversa')
             measured_at = parse_time(raw.get('measured_at'))

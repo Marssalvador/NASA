@@ -177,6 +177,72 @@
   font-size: 0.74rem;
 }
 
+.mi-trend-select {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--mi-soft);
+  font-size: 0.75rem;
+}
+
+.mi-trend-select select {
+  max-width: 240px;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--mi-border);
+  border-radius: 0.7rem;
+  background: rgba(11, 17, 27, 0.9);
+  color: var(--mi-text);
+}
+
+.mi-chart-wrap {
+  margin-top: 0.8rem;
+  padding: 0.6rem 0.8rem 0.8rem;
+  border: 1px solid var(--mi-border);
+  border-radius: 14px;
+  background: rgba(8, 13, 20, 0.58);
+}
+
+.mi-chart {
+  width: 100%;
+  height: 170px;
+  overflow: visible;
+}
+
+.mi-chart line {
+  stroke: rgba(169, 191, 216, 0.24);
+  stroke-width: 1;
+}
+
+.mi-chart path {
+  fill: none;
+  stroke: var(--mi-primary);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mi-chart circle {
+  fill: var(--mi-accent);
+  stroke: #07111b;
+  stroke-width: 1;
+}
+
+.mi-chart-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--mi-soft);
+  font-size: 0.7rem;
+}
+
+.mi-chart-wrap > small,
+.mi-field-note {
+  display: block;
+  margin-top: 0.4rem;
+  color: var(--mi-soft);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
 .mi-run,
 .mi-secondary,
 .anatomy-medical-button {

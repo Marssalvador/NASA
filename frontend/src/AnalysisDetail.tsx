@@ -9,30 +9,30 @@ export default function AnalysisDetail({ a, d }: { a: Analysis; d?: Biomarker })
       </div>
       <dl className="detail-grid">
         {[
-          ['Última adquisición', `${fmt(a.latest?.value, 3)} ${d?.unit ?? ''}`],
-          ['Estado de datos', a.data_state],
-          ['Muestras aceptadas', a.n],
-          ['Muestras excluidas', a.excluded],
-          ['Media', fmt(a.mean, 3)],
-          ['Desviación estándar', fmt(a.std, 3)],
-          ['Mediana', fmt(a.median, 3)],
+          ['Latest reading', `${fmt(a.latest?.value, 3)} ${d?.unit ?? ''}`],
+          ['Data state', a.data_state],
+          ['Accepted samples', a.n],
+          ['Excluded samples', a.excluded],
+          ['Mean', fmt(a.mean, 3)],
+          ['Standard deviation', fmt(a.std, 3)],
+          ['Median', fmt(a.median, 3)],
           ['MAD', fmt(a.mad, 3)],
-          ['Tendencia / día', fmt(a.trend_per_day, 3)],
+          ['Trend / day', fmt(a.trend_per_day, 3)],
           [
-            'Desviación personal',
-            a.deviation_z == null ? 'No estimable' : `${fmt(a.deviation_z, 2)} σ`,
+            'Personal deviation',
+            a.deviation_z == null ? 'Not estimable' : `${fmt(a.deviation_z, 2)} σ`,
           ],
           [
-            'Baseline previo',
+            'Previous baseline',
             a.baseline
               ? `${fmt(a.baseline.mean, 3)} ± ${fmt(a.baseline.std, 3)} · n=${a.baseline.n}`
-              : 'No disponible',
+              : 'Not available',
           ],
-          ['Origen', a.latest?.source ?? 'Sin adquisición'],
-          ['Calidad', a.latest?.quality ?? 'Sin adquisición'],
+          ['Source', a.latest?.source ?? 'No acquisition'],
+          ['Quality', a.latest?.quality ?? 'No acquisition'],
           [
-            'Procedencia',
-            a.latest ? (a.latest.is_synthetic ? 'Sintética' : 'Real') : 'Sin adquisición',
+            'Provenance',
+            a.latest ? (a.latest.is_synthetic ? 'Synthetic' : 'Real') : 'No acquisition',
           ],
         ].map(([k, v]) => (
           <div key={String(k)}>
@@ -41,7 +41,7 @@ export default function AnalysisDetail({ a, d }: { a: Analysis; d?: Biomarker })
           </div>
         ))}
       </dl>
-      <h3>Incertidumbre</h3>
+      <h3>Uncertainty</h3>
       <p className="muted">{a.uncertainty}</p>
       {a.quality_flags.map((q) => (
         <p className="amber small" key={q}>
@@ -52,7 +52,7 @@ export default function AnalysisDetail({ a, d }: { a: Analysis; d?: Biomarker })
         <p className="small muted">
           Timestamp: {dateTime(a.latest.timestamp)}
           <br />
-          Método: {a.latest.measurement_method}
+          Method: {a.latest.measurement_method}
         </p>
       )}
       {a.baseline && (

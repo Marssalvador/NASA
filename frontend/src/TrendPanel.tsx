@@ -35,9 +35,9 @@ export default function TrendPanel({
   return (
     <div className="anatomy-trend">
       <label>
-        Biomarcador
+        Biomarker
         <select
-          aria-label="Biomarcador de la gráfica"
+          aria-label="Chart biomarker"
           value={metric}
           onChange={(e) => setMetric(e.target.value)}
         >
@@ -67,7 +67,7 @@ export default function TrendPanel({
               type="number"
               domain={['dataMin', 'dataMax']}
               tickFormatter={(t) =>
-                new Date(t).toLocaleDateString('es-ES', {
+                new Date(t).toLocaleDateString('en-US', {
                   day: '2-digit',
                   month: 'short',
                   timeZone: 'UTC',
@@ -87,7 +87,7 @@ export default function TrendPanel({
             />
             <Tooltip
               labelFormatter={(t) => dateTime(new Date(Number(t)).toISOString())}
-              formatter={(v) => [`${fmt(Number(v), 2)} ${definition?.unit}`, 'Medición']}
+              formatter={(v) => [`${fmt(Number(v), 2)} ${definition?.unit}`, 'Measurement']}
               contentStyle={{
                 background: '#fffdfa',
                 border: '1px solid #ded7cf',
@@ -112,11 +112,11 @@ export default function TrendPanel({
         </ResponsiveContainer>
       </div>
       <p className="anatomy-trend-footnote">
-        Línea discontinua: baseline personal. Sin intervalos estimados: los supuestos de la serie no
-        están verificados.
+        Dashed line: personal baseline. No estimated intervals are shown because the series assumptions
+        have not been verified.
       </p>
       <button className="anatomy-outline-button" onClick={onDetail}>
-        Ver estadística e incertidumbre <ArrowUpRight size={14} />
+        View statistics and uncertainty <ArrowUpRight size={14} />
       </button>
     </div>
   );

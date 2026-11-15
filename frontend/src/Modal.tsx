@@ -29,10 +29,10 @@ export default function Modal({
     >
       <div className="modal-header">
         <div>
-          <span className="eyebrow">AEGIS / LOCAL WORKSPACE</span>
+          <span className="eyebrow">HELIOS / LOCAL WORKSPACE</span>
           <h2>{title}</h2>
         </div>
-        <button className="icon-button" aria-label="Cerrar" onClick={onClose}>
+        <button className="icon-button" aria-label="Close" onClick={onClose}>
           <X size={20} />
         </button>
       </div>

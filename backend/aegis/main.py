@@ -36,6 +36,16 @@ def subject_or_404(subject_id):
     subject = store.get_astronaut(subject_id)
     if subject is None:
         raise HTTPException(404, 'Astronauta desconocido')
+    return _legacy_demo_profile(subject)
+
+
+def _legacy_demo_profile(subject):
+    """Upgrade the two pre-existing synthetic demo profiles without changing stored records."""
+    if subject.is_synthetic and subject.sex == 'unspecified':
+        if subject.id == 'crew-01':
+            return subject.model_copy(update={'sex': 'female', 'cycle_status': 'active', 'usual_cycle_length_days': 28})
+        if subject.id == 'crew-02':
+            return subject.model_copy(update={'sex': 'male', 'cycle_status': 'not_applicable'})
     return subject
 
 
@@ -56,7 +66,7 @@ def risk_pathways():
 
 @app.get('/api/astronauts')
 def astronauts():
-    return store.astronauts()
+    return [_legacy_demo_profile(subject) for subject in store.astronauts()]
 
 
 @app.post('/api/astronauts', status_code=201)

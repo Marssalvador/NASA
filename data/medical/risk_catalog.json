@@ -14,14 +14,46 @@
       "source_document": "spec",
       "validation_status": "design_hypothesis",
       "links": [
-        { "biomarker": "resistive_exercise_minutes", "role": "trigger", "rationale": "Carga de ejercicio resistivo insuficiente de forma prolongada." },
-        { "biomarker": "hrv", "role": "trigger", "rationale": "HRV deteriorada / mala recuperación." },
-        { "biomarker": "sweat_sodium", "role": "context", "rationale": "Indicio de deshidratación o pérdida electrolítica." },
-        { "biomarker": "estradiol", "role": "modifier", "rationale": "Fase hormonal: los estrógenos tienen efecto protector óseo (cycle 3.8)." },
-        { "biomarker": "progesterone", "role": "modifier", "rationale": "Identificación de la fase lútea (cycle 2.4)." },
-        { "biomarker": "ctx_i", "role": "confirmation", "rationale": "Marcador de resorción ósea (spec 4)." },
-        { "biomarker": "p1np", "role": "confirmation", "rationale": "Marcador de formación ósea (spec 4)." },
-        { "biomarker": "vitamin_d", "role": "context", "rationale": "Revisión de calcio/vitamina D como contramedida (spec 3.1)." }
+        {
+          "biomarker": "resistive_exercise_minutes",
+          "role": "trigger",
+          "rationale": "Carga de ejercicio resistivo insuficiente de forma prolongada."
+        },
+        {
+          "biomarker": "hrv",
+          "role": "trigger",
+          "rationale": "HRV deteriorada / mala recuperación."
+        },
+        {
+          "biomarker": "sweat_sodium",
+          "role": "context",
+          "rationale": "Indicio de deshidratación o pérdida electrolítica."
+        },
+        {
+          "biomarker": "estradiol",
+          "role": "modifier",
+          "rationale": "Fase hormonal: los estrógenos tienen efecto protector óseo (cycle 3.8)."
+        },
+        {
+          "biomarker": "progesterone",
+          "role": "modifier",
+          "rationale": "Identificación de la fase lútea (cycle 2.4)."
+        },
+        {
+          "biomarker": "ctx_i",
+          "role": "confirmation",
+          "rationale": "Marcador de resorción ósea (spec 4)."
+        },
+        {
+          "biomarker": "p1np",
+          "role": "confirmation",
+          "rationale": "Marcador de formación ósea (spec 4)."
+        },
+        {
+          "biomarker": "vitamin_d",
+          "role": "context",
+          "rationale": "Revisión de calcio/vitamina D como contramedida (spec 3.1)."
+        }
       ]
     },
     {
@@ -33,14 +65,46 @@
       "source_document": "spec",
       "validation_status": "design_hypothesis",
       "links": [
-        { "biomarker": "sweat_sodium", "role": "trigger", "rationale": "Desequilibrio electrolítico / deshidratación." },
-        { "biomarker": "sweat_potassium", "role": "trigger", "rationale": "Desequilibrio electrolítico." },
-        { "biomarker": "sweat_ph", "role": "trigger", "rationale": "pH del sudor alterado de forma recurrente (kb 2.7)." },
-        { "biomarker": "ctx_i", "role": "trigger", "rationale": "Indicio de movilización ósea." },
-        { "biomarker": "urinary_calcium", "role": "confirmation", "rationale": "Perfil urinario: calcio." },
-        { "biomarker": "urine_ph", "role": "confirmation", "rationale": "Perfil urinario: pH." },
-        { "biomarker": "creatinine", "role": "confirmation", "rationale": "Perfil urinario: creatinina / función renal." },
-        { "biomarker": "urinary_citrate", "role": "confirmation", "rationale": "Perfil urinario: citrato si está disponible." }
+        {
+          "biomarker": "sweat_sodium",
+          "role": "trigger",
+          "rationale": "Desequilibrio electrolítico / deshidratación."
+        },
+        {
+          "biomarker": "sweat_potassium",
+          "role": "trigger",
+          "rationale": "Desequilibrio electrolítico."
+        },
+        {
+          "biomarker": "sweat_ph",
+          "role": "trigger",
+          "rationale": "pH del sudor alterado de forma recurrente (kb 2.7)."
+        },
+        {
+          "biomarker": "ctx_i",
+          "role": "trigger",
+          "rationale": "Indicio de movilización ósea."
+        },
+        {
+          "biomarker": "urinary_calcium",
+          "role": "confirmation",
+          "rationale": "Perfil urinario: calcio."
+        },
+        {
+          "biomarker": "urine_ph",
+          "role": "confirmation",
+          "rationale": "Perfil urinario: pH."
+        },
+        {
+          "biomarker": "creatinine",
+          "role": "confirmation",
+          "rationale": "Perfil urinario: creatinina / función renal."
+        },
+        {
+          "biomarker": "urinary_citrate",
+          "role": "confirmation",
+          "rationale": "Perfil urinario: citrato si está disponible."
+        }
       ]
     },
     {
@@ -52,16 +116,56 @@
       "source_document": "spec",
       "validation_status": "design_hypothesis",
       "links": [
-        { "biomarker": "cortisol_sweat", "role": "trigger", "rationale": "Cortisol elevado de forma mantenida / pérdida de ritmo circadiano." },
-        { "biomarker": "hrv", "role": "trigger", "rationale": "HRV baja." },
-        { "biomarker": "sleep", "role": "trigger", "rationale": "Sueño insuficiente." },
-        { "biomarker": "sleep_efficiency", "role": "trigger", "rationale": "Sueño fragmentado." },
-        { "biomarker": "lactate", "role": "trigger", "rationale": "Lactato de recuperación lento o reposo alto." },
-        { "biomarker": "temperature", "role": "trigger", "rationale": "Temperatura elevada (posible proceso inflamatorio o infeccioso)." },
-        { "biomarker": "heart_rate", "role": "trigger", "rationale": "FC en reposo elevada." },
-        { "biomarker": "eda", "role": "context", "rationale": "Activación simpática mantenida (señal de apoyo)." },
-        { "biomarker": "il6", "role": "confirmation", "rationale": "Marcador inflamatorio." },
-        { "biomarker": "crp", "role": "confirmation", "rationale": "Marcador inflamatorio." }
+        {
+          "biomarker": "cortisol_sweat",
+          "role": "trigger",
+          "rationale": "Cortisol elevado de forma mantenida / pérdida de ritmo circadiano."
+        },
+        {
+          "biomarker": "hrv",
+          "role": "trigger",
+          "rationale": "HRV baja."
+        },
+        {
+          "biomarker": "sleep",
+          "role": "trigger",
+          "rationale": "Sueño insuficiente."
+        },
+        {
+          "biomarker": "sleep_efficiency",
+          "role": "trigger",
+          "rationale": "Sueño fragmentado."
+        },
+        {
+          "biomarker": "lactate",
+          "role": "trigger",
+          "rationale": "Lactato de recuperación lento o reposo alto."
+        },
+        {
+          "biomarker": "temperature",
+          "role": "trigger",
+          "rationale": "Temperatura elevada (posible proceso inflamatorio o infeccioso)."
+        },
+        {
+          "biomarker": "heart_rate",
+          "role": "trigger",
+          "rationale": "FC en reposo elevada."
+        },
+        {
+          "biomarker": "eda",
+          "role": "context",
+          "rationale": "Activación simpática mantenida (señal de apoyo)."
+        },
+        {
+          "biomarker": "il6",
+          "role": "confirmation",
+          "rationale": "Marcador inflamatorio."
+        },
+        {
+          "biomarker": "crp",
+          "role": "confirmation",
+          "rationale": "Marcador inflamatorio."
+        }
       ]
     },
     {
@@ -73,12 +177,133 @@
       "source_document": "spec",
       "validation_status": "design_hypothesis",
       "links": [
-        { "biomarker": "heart_rate", "role": "trigger", "rationale": "FC en reposo elevada." },
-        { "biomarker": "hrv", "role": "trigger", "rationale": "HRV baja." },
-        { "biomarker": "temperature", "role": "trigger", "rationale": "Cambios de temperatura." },
-        { "biomarker": "sweat_sodium", "role": "context", "rationale": "Hidratación alterada." },
-        { "biomarker": "systolic_bp", "role": "confirmation", "rationale": "Estado hemodinámico." },
-        { "biomarker": "diastolic_bp", "role": "confirmation", "rationale": "Estado hemodinámico." }
+        {
+          "biomarker": "heart_rate",
+          "role": "trigger",
+          "rationale": "FC en reposo elevada."
+        },
+        {
+          "biomarker": "hrv",
+          "role": "trigger",
+          "rationale": "HRV baja."
+        },
+        {
+          "biomarker": "temperature",
+          "role": "trigger",
+          "rationale": "Cambios de temperatura."
+        },
+        {
+          "biomarker": "sweat_sodium",
+          "role": "context",
+          "rationale": "Hidratación alterada."
+        },
+        {
+          "biomarker": "systolic_bp",
+          "role": "confirmation",
+          "rationale": "Estado hemodinámico."
+        },
+        {
+          "biomarker": "diastolic_bp",
+          "role": "confirmation",
+          "rationale": "Estado hemodinámico."
+        }
+      ]
+    },
+    {
+      "id": "jugular_doppler_review",
+      "name": "Hallazgos de seguimiento Doppler yugular",
+      "description": "Seguimiento de resultados externos Doppler y factores individuales; no diagnostica trombosis.",
+      "body_region": "heart",
+      "criteria": "Revisi?n de hallazgos transcritos de un informe Doppler externo. El motor no interpreta im?genes ni confirma trombos.",
+      "source_document": "spec",
+      "validation_status": "design_hypothesis",
+      "links": [
+        {
+          "biomarker": "jugular_stasis_reported",
+          "role": "trigger",
+          "rationale": "Hallazgo reportado por el profesional que interpret? el Doppler."
+        },
+        {
+          "biomarker": "jugular_thrombus_suspected_reported",
+          "role": "trigger",
+          "rationale": "Sospecha transcrita del informe externo, no conclusi?n del software."
+        },
+        {
+          "biomarker": "jugular_flow_velocity",
+          "role": "context",
+          "rationale": "Valor contextualizado con lado, direcci?n y m?todo del examen."
+        }
+      ]
+    },
+    {
+      "id": "muscle_function_monitoring",
+      "name": "Evoluci?n de fuerza y propiedades musculares",
+      "description": "Seguimiento individual de fuerza y EIM por grupo muscular; ninguna se?al aislada estima gramos de masa muscular.",
+      "body_region": "muscles",
+      "criteria": "Tendencias longitudinales de dinamometr?a y propiedades EIM frente al baseline individual; interpretar junto a protocolo, calidad y bioqu?mica.",
+      "source_document": "spec",
+      "validation_status": "design_hypothesis",
+      "links": [
+        {
+          "biomarker": "hip_extensor_force",
+          "role": "trigger",
+          "rationale": "Fuerza extensora de cadera comparada con baseline individual."
+        },
+        {
+          "biomarker": "knee_extensor_force",
+          "role": "trigger",
+          "rationale": "Fuerza extensora de rodilla comparada con baseline individual."
+        },
+        {
+          "biomarker": "ankle_plantarflexor_force",
+          "role": "trigger",
+          "rationale": "Fuerza flexora plantar comparada con baseline individual."
+        },
+        {
+          "biomarker": "eim_resistance_thigh",
+          "role": "trigger",
+          "rationale": "Cambio en resistencia EIM, no medida directa de masa."
+        },
+        {
+          "biomarker": "eim_reactance_thigh",
+          "role": "trigger",
+          "rationale": "Cambio en reactancia EIM."
+        },
+        {
+          "biomarker": "eim_phase_angle_thigh",
+          "role": "trigger",
+          "rationale": "Cambio en ?ngulo de fase EIM."
+        },
+        {
+          "biomarker": "creatine_kinase",
+          "role": "confirmation",
+          "rationale": "Prueba complementaria solo cuando est? indicada cl?nicamente."
+        },
+        {
+          "biomarker": "exercise_session_minutes",
+          "role": "context",
+          "rationale": "Registro de carga de entrenamiento realizado, contextual, no prescriptivo."
+        },
+        {
+          "biomarker": "dietary_protein_g",
+          "role": "context",
+          "rationale": "Contexto de ingesta proteica registrada; no estima suficiencia nutricional por s? sola."
+        },
+        {
+          "biomarker": "vitamin_d",
+          "role": "context",
+          "rationale": "Estado bioqu?mico nutricional complementario."
+        },
+        {
+          "biomarker": "serum_sodium",
+          "role": "context",
+          "rationale": "Electrolitos s?ricos como contexto bioqu?mico si existe an?lisis."
+        },
+        {
+          "biomarker": "serum_potassium",
+          "role": "context",
+          "rationale": "Electrolitos s?ricos como contexto bioqu?mico si existe an?lisis."
+        }
       ]
     }
   ]

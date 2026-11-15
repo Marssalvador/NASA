@@ -18,7 +18,7 @@ import {
 } from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { acceleratedRaycast, computeBoundsTree } from 'three-mesh-bvh';
-import { bodySites, cameraEase, cameraTargets, CAMERA_DURATION_MS } from './anatomyConfig';
+import { bodySites, cameraEase, cameraTargets, CAMERA_DURATION_MS, muscleRegions } from './anatomyConfig';
 import type { BodyMarker } from './lib';
 import type { Status } from './types';
 
@@ -46,6 +46,9 @@ interface Props {
   /** false: alert sites keep their soft glow but no callout labels are drawn. */
   labels?: boolean;
   theme?: Theme;
+  /** Camera and highlight target for a zone inside the muscle atlas. */
+  cameraFocus?: string;
+  selectedMuscleZone?: string | null;
 }
 interface MeshInfo {
   mesh: Mesh;
@@ -61,16 +64,13 @@ export function prefetchDetail(region: string) {
   useGLTF.preload(detailUrl(region), false, true);
 }
 function projectionOffset(
-  camera: PerspectiveCamera,
-  width: number,
-  height: number,
-  focused: boolean,
+  _camera: PerspectiveCamera,
+  _width: number,
+  _height: number,
+  _focused: boolean,
 ) {
-  if (focused || window.innerWidth <= 900) return 0;
-  return (
-    -(window.innerWidth <= 1200 ? 132 : 160) *
-    ((2 * Math.tan((camera.fov * Math.PI) / 360) * 35 * Math.min(width / height, 1)) / height)
-  );
+  // Keep the anatomy centered in the full-width stage; side panels overlay it.
+  return 0;
 }
 
 class ViewBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -81,8 +81,8 @@ class ViewBoundary extends Component<{ children: ReactNode }, { failed: boolean 
   render() {
     return this.state.failed ? (
       <div className="anatomy-load-error" role="alert">
-        No se pudo abrir el visor 3D. Comprueba WebGL y los archivos locales del atlas.
-        <button onClick={() => window.location.reload()}>Volver a cargar</button>
+        Could not open the 3D viewer. Check WebGL and the local atlas files.
+        <button onClick={() => window.location.reload()}>Reload</button>
       </div>
     ) : (
       this.props.children
@@ -95,8 +95,8 @@ function Loader() {
   return (
     <div className="anatomy-loader" role="status">
       <span className="anatomy-loader-ring" />
-      <strong>Preparando el atlas anatómico</strong>
-      <span>Geometría local · {Math.round(progress)} %</span>
+      <strong>Loading anatomical atlas</strong>
+      <span>Local geometry · {Math.round(progress)}%</span>
     </div>
   );
 }
@@ -366,8 +366,12 @@ type ViewMode = 'overview' | 'zoom' | 'isolate';
  * Target opacity per piece. Overview reads as a visible porcelain person; zoom keeps that
  * context and only clears the way to the selected system; isolate fades everything else.
  */
-function opacityFor(part: MeshInfo, selected: string, mode: ViewMode, theme: Theme) {
+function opacityFor(part: MeshInfo, selected: string, mode: ViewMode, theme: Theme, selectedMuscleZone?: string | null) {
   const { region, tissue } = part;
+  if (region === 'muscles' && selectedMuscleZone) {
+    const selectedGroup = muscleRegions.find((item) => item.id === selectedMuscleZone);
+    if (selectedGroup) return selectedGroup.atlasZones.includes(part.zone) ? 0.98 : 0.12;
+  }
   const active = region === selected;
   if (mode === 'isolate') {
     if (region === 'skin') return 0.3;
@@ -394,6 +398,24 @@ function opacityFor(part: MeshInfo, selected: string, mode: ViewMode, theme: The
   return active ? 0.98 : 0.5;
 }
 
+function MuscleSelectionSpot({ regionId }: { regionId?: string | null }) {
+  const region = muscleRegions.find((item) => item.id === regionId);
+  const site = region ? bodySites[region.site] : undefined;
+  if (!site) return null;
+  return (
+    <mesh position={site.point} renderOrder={30}>
+      <sphereGeometry args={[site.radius * 0.42, 20, 14]} />
+      <meshBasicMaterial
+        color="#ff665d"
+        transparent
+        opacity={0.48}
+        depthTest={false}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
 const layerOf = (part: MeshInfo): keyof LayersState =>
   part.region === 'skin' || part.region === 'muscles' || part.region === 'skeleton'
     ? part.region
@@ -411,6 +433,7 @@ function Anatomy({
   url = MODEL_URL,
   hiddenRegion = null,
   visible = true,
+  selectedMuscleZone,
 }: {
   selected: string;
   focused: boolean;
@@ -423,6 +446,7 @@ function Anatomy({
   url?: string;
   hiddenRegion?: string | null;
   visible?: boolean;
+  selectedMuscleZone?: string | null;
 }) {
   const { scene: original } = useGLTF(url, false, true);
   const { scene, parts, spots } = useMemo(() => prepareScene(original, true, theme), [original, theme]);
@@ -446,7 +470,7 @@ function Anatomy({
   useEffect(() => {
     for (const part of parts) {
       part.mesh.visible = visible && layers[layerOf(part)] && part.region !== hiddenRegion;
-      const target = opacityFor(part, selected, !focused ? 'overview' : isolate ? 'isolate' : 'zoom', theme);
+      const target = opacityFor(part, selected, !focused ? 'overview' : isolate ? 'isolate' : 'zoom', theme, selectedMuscleZone);
       part.material.userData.targetOpacity = target;
       if (!part.material.userData.initialized) {
         part.material.opacity = target;
@@ -460,7 +484,7 @@ function Anatomy({
       part.material.depthWrite = target >= 0.95 && look.core > 0.9;
     }
     invalidate();
-  }, [parts, selected, focused, isolate, theme, layers, invalidate, hiddenRegion, visible]);
+  }, [parts, selected, focused, isolate, theme, layers, invalidate, hiddenRegion, visible, selectedMuscleZone]);
   useFrame((_, delta) => {
     const alpha = 1 - Math.exp(-delta * 9);
     let moving = false;
@@ -493,11 +517,13 @@ function Anatomy({
 
 function CameraDirector({
   selected,
+  cameraFocus,
   focused,
   back,
   reset,
 }: {
   selected: string;
+  cameraFocus?: string;
   focused: boolean;
   back: boolean;
   reset: number;
@@ -516,7 +542,7 @@ function CameraDirector({
   } | null>(null);
   useEffect(() => {
     if (!controls.current) return;
-    const pose = cameraTargets[focused ? selected : 'overview'] ?? cameraTargets.overview;
+    const pose = cameraTargets[focused ? cameraFocus ?? selected : 'overview'] ?? cameraTargets.overview;
     const destination = new Vector3(...pose.position),
       target = new Vector3(...pose.target);
     destination.y = target.y;
@@ -538,7 +564,7 @@ function CameraDirector({
     };
     controls.current.enabled = false;
     invalidate();
-  }, [camera, selected, focused, back, reset, invalidate, size.width, size.height]);
+  }, [camera, selected, cameraFocus, focused, back, reset, invalidate, size.width, size.height]);
   useFrame(() => {
     const a = animation.current,
       c = controls.current;
@@ -748,12 +774,12 @@ export default function AnatomyViewer(props: Props) {
       data-detail-region={
         props.focused && detailRegion === props.selected ? detailRegion : 'overview'
       }
-      aria-label="Modelo anatómico 3D interactivo; arrastra para rotar"
+      aria-label="Interactive 3D anatomical model; drag to rotate"
     >
       {!props.focused && <div className="anatomy-ground-shadow" aria-hidden="true" />}
       {props.focused && failedDetail === props.selected && (
         <div className="anatomy-detail-note" role="status">
-          Detalle no disponible; se mantiene la vista ligera.{' '}
+          Detail unavailable; keeping the lightweight view.{' '}
           <button
             onClick={() => {
               useGLTF.clear(detailUrl(props.selected));
@@ -761,13 +787,13 @@ export default function AnatomyViewer(props: Props) {
               setRetry((r) => r + 1);
             }}
           >
-            Reintentar
+            Retry
           </button>
         </div>
       )}
       {contextLost && (
         <div className="anatomy-detail-note" role="status">
-          Restaurando el contexto gráfico…
+          Restoring graphics context…
         </div>
       )}
       <ViewBoundary>
@@ -803,6 +829,7 @@ export default function AnatomyViewer(props: Props) {
                   : null
               }
             />
+            <MuscleSelectionSpot regionId={props.selectedMuscleZone} />
             {props.focused && props.isolate !== false && (
               <DetailBoundary
                 key={`${props.selected}-${retry}`}
@@ -955,7 +982,7 @@ function PreviewObject({ selected, status }: { selected: string; status: Status 
 export function OrganPreview({ selected, status }: { selected: string; status: Status }) {
   return (
     <ViewBoundary>
-      <Suspense fallback={<div className="organ-preview-loading">Preparando órgano…</div>}>
+      <Suspense fallback={<div className="organ-preview-loading">Loading organ…</div>}>
         <Canvas
           frameloop="demand"
           camera={{ position: [0, 0, 0.5], near: 0.001, far: 10, fov: 35 }}

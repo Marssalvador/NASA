@@ -35,7 +35,7 @@ export default function ImportDialog({
     [mapping, setMapping] = useState<Record<string, string>>({}),
     [units, setUnits] = useState<Record<string, string>>({});
   const [synthetic, setSynthetic] = useState(false),
-    [source, setSource] = useState('Importación local'),
+    [source, setSource] = useState('Local import'),
     [report, setReport] = useState<Report | null>(null),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -48,7 +48,7 @@ export default function ImportDialog({
   async function read(file: File) {
     reset();
     if (file.size > 2_000_000) {
-      setError('Tamaño máximo: 2 MB.');
+      setError('Maximum file size: 2 MB.');
       return;
     }
     try {
@@ -58,7 +58,7 @@ export default function ImportDialog({
       if (type === 'json') {
         const data = JSON.parse(text);
         if (!Array.isArray(data) || !data.length)
-          throw new Error('Se requiere un array de objetos.');
+          throw new Error('A non-empty array of objects is required.');
         const h = Object.keys(data[0]);
         rows = [
           h,
@@ -93,7 +93,7 @@ export default function ImportDialog({
     setError('');
     try {
       if (wide && !Object.values(mapping).some(Boolean))
-        throw new Error('Asocia al menos una columna a un biomarcador.');
+        throw new Error('Map at least one column to a biomarker.');
       setReport(await api<Report>('/import/preview', spec()));
     } catch (e) {
       setError(String(e));
@@ -115,14 +115,13 @@ export default function ImportDialog({
     }
   }
   return (
-    <Modal title="Importar mediciones" onClose={onClose} wide>
+    <Modal title="Import measurements" onClose={onClose} wide>
       <p className="muted">
-        CSV o JSON · Máximo 5000 filas · Una persona por importación · Las fechas requieren zona
-        horaria.
+        CSV or JSON · Up to 5,000 rows · One person per import · Dates must include a time zone.
       </p>
       <div className="form-grid">
         <label>
-          Astronauta
+          Astronaut
           <select
             value={subject}
             onChange={(e) => {
@@ -138,7 +137,7 @@ export default function ImportDialog({
           </select>
         </label>
         <label>
-          Origen de la adquisición
+          Acquisition source
           <input
             value={source}
             onChange={(e) => {
@@ -150,12 +149,12 @@ export default function ImportDialog({
       </div>
       <label className="upload-zone">
         <Upload size={26} />
-        <strong>{fileName || 'Selecciona un archivo local'}</strong>
-        <span>CSV / JSON · hasta 2 MB</span>
+        <strong>{fileName || 'Choose a local file'}</strong>
+        <span>CSV / JSON · up to 2 MB</span>
         <input
           type="file"
           accept=".csv,.json"
-          aria-label="Archivo de mediciones"
+          aria-label="Measurement file"
           onChange={(e) => {
             if (e.target.files?.[0]) void read(e.target.files[0]);
           }}
@@ -170,11 +169,11 @@ export default function ImportDialog({
             reset();
           }}
         />{' '}
-        Estos datos son sintéticos o simulados
+        This data is synthetic or simulated
       </label>
       <p className="small muted">
-        Se conservará esta etiqueta. Los datos reales se analizan separados de los sintéticos y
-        necesitan su propio baseline.
+        This label will be preserved. Real and synthetic data are analyzed separately and require
+        their own baseline.
       </p>
       {headers.length > 0 && (
         <>
@@ -200,7 +199,7 @@ export default function ImportDialog({
           </div>
           <div className="form-grid">
             <label>
-              Columna de fecha
+              Timestamp column
               <select
                 value={timestamp}
                 onChange={(e) => {
@@ -214,7 +213,7 @@ export default function ImportDialog({
               </select>
             </label>
             <label>
-              Organización
+              Format
               <select
                 value={wide ? 'wide' : 'long'}
                 onChange={(e) => {
@@ -222,16 +221,16 @@ export default function ImportDialog({
                   reset();
                 }}
               >
-                <option value="long">Una medición por fila (metric_id, value, unit)</option>
-                <option value="wide">Una variable por columna</option>
+                <option value="long">One measurement per row (metric_id, value, unit)</option>
+                <option value="wide">One variable per column</option>
               </select>
             </label>
           </div>
           {!wide && (
             <p className="small muted">
-              Columnas requeridas: metric_id, value, unit y la fecha seleccionada. Opcionales:
-              astronaut_id, quality, measurement_method, is_synthetic. Las unidades de cada fila se
-              validan contra el registro.
+              Required columns: metric_id, value, unit, and the selected timestamp. Optional:
+              astronaut_id, quality, measurement_method, is_synthetic. Row units are validated
+              against the registry.
             </p>
           )}
           {wide && (
@@ -253,7 +252,7 @@ export default function ImportDialog({
                       <FileText size={13} /> {h}
                     </span>
                     <select
-                      aria-label={`Asociar ${h}`}
+                      aria-label={`Map ${h}`}
                       value={mapping[h] || ''}
                       onChange={(e) => {
                         setMapping({ ...mapping, [h]: e.target.value });
@@ -262,7 +261,7 @@ export default function ImportDialog({
                         reset();
                       }}
                     >
-                      <option value="">Ignorar columna</option>
+                      <option value="">Ignore column</option>
                       {registry.map((d) => (
                         <option key={d.id} value={d.id}>
                           {d.name}
@@ -271,7 +270,7 @@ export default function ImportDialog({
                     </select>
                     {mapping[h] && (
                       <input
-                        aria-label={`Unidad ${h}`}
+                        aria-label={`Unit for ${h}`}
                         value={units[mapping[h]] || ''}
                         onChange={(e) => {
                           setUnits({ ...units, [mapping[h]]: e.target.value });
@@ -294,16 +293,16 @@ export default function ImportDialog({
         <div className={report.valid ? 'success-box' : 'error-box'} role="status">
           {done ? (
             <>
-              <CheckCircle2 size={18} /> Guardadas {report.inserted} mediciones. Duplicados
-              omitidos: {report.duplicates}.
+              <CheckCircle2 size={18} /> Saved {report.inserted} measurements. Skipped duplicates:
+              {' '}{report.duplicates}.
             </>
           ) : (
             <>
-              {report.rows} filas · {report.inserted} nuevas mediciones · {report.duplicates}{' '}
-              duplicados existentes.
+              {report.rows} rows · {report.inserted} new measurements · {report.duplicates}{' '}
+              existing duplicates.
               {report.errors.map((e, i) => (
                 <p key={i}>
-                  Fila {e.row}: {e.message}
+                  Row {e.row}: {e.message}
                 </p>
               ))}
             </>
@@ -312,21 +311,21 @@ export default function ImportDialog({
       )}
       <div className="modal-actions">
         <button className="button secondary" onClick={onClose}>
-          {done ? 'Cerrar' : 'Cancelar'}
+          {done ? 'Close' : 'Cancel'}
         </button>
         <button
           className="button secondary"
           disabled={!content || busy || done}
           onClick={() => void validate()}
         >
-          Validar y previsualizar
+          Validate and preview
         </button>
         <button
           className="button primary"
           disabled={!report?.valid || busy || done}
           onClick={() => void commit()}
         >
-          {busy ? 'Procesando…' : 'Guardar en SQLite'}
+          {busy ? 'Processing…' : 'Save to SQLite'}
         </button>
       </div>
     </Modal>

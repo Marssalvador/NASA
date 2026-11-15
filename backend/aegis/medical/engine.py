@@ -52,14 +52,22 @@ def data_states(knowledge: Knowledge, observations, as_of: datetime, wanted: set
     return states
 
 
-def anomalies(feature_rows: list[Feature]) -> list[dict]:
-    """Robust |z| >= 3 on the last two consecutive daily values: a research heuristic, not a clinical limit."""
+def anomalies(feature_rows: list[Feature], knowledge: Knowledge | None = None) -> list[dict]:
+    """Flag repeated personal-baseline deviations; a research heuristic, not a clinical limit.
+
+    Continuous signals require consecutive days. Episodic dynamometry/EIM signals use the last two
+    valid tests in their configured freshness window, since those tests are not daily.
+    """
     found = []
     for biomarker in sorted({f.biomarker_id for f in feature_rows if f.feature == 'daily_robust_z_vs_initial'}):
         days = sorted((f for f in feature_rows if f.biomarker_id == biomarker and f.feature == 'daily_robust_z_vs_initial'),
                       key=lambda f: f.day)[-ANOMALY_DAYS:]
-        consecutive = len(days) == ANOMALY_DAYS and all((b.day - a.day).days == 1 for a, b in zip(days, days[1:]))
-        if consecutive and all(abs(f.value) >= ANOMALY_Z for f in days) and len({f.value > 0 for f in days}) == 1:
+        episodic_test = bool(knowledge and knowledge.biomarkers[biomarker].get('sample_type') in {
+            'dynamometry', 'electrical_impedance_myography'})
+        consecutive = episodic_test or (len(days) == ANOMALY_DAYS and
+                      all((b.day - a.day).days == 1 for a, b in zip(days, days[1:])))
+        if len(days) == ANOMALY_DAYS and consecutive and all(abs(f.value) >= ANOMALY_Z for f in days) \
+                and len({f.value > 0 for f in days}) == 1:
             found.append({'biomarker_id': biomarker, 'robust_z': [f.value for f in days],
                           'direction': 'up' if days[-1].value > 0 else 'down',
                           'evidence_ids': sorted({i for f in days for i in f.input_ids})})
@@ -91,7 +99,7 @@ class Engine:
 
         feature_rows = featurelib.compute(profile, observations, events, k, baselines, as_of)
         self.repo.save_features(astronaut_id, run_id, feature_rows, ENGINE_VERSION)
-        found = anomalies(feature_rows)
+        found = anomalies(feature_rows, k)
         emergencies = emergency.evaluate(k, feature_rows, events, as_of)
 
         matches = []

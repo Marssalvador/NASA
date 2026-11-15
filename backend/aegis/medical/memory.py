@@ -72,8 +72,9 @@ def build(profile: Profile, observations: list[Observation], events: list[Event]
             continue
         synthetic = cohort([o for o in observations if o.biomarker_id == biomarker])[0].is_synthetic
         before = {d: v for d, v in series.items() if d < profile.mission_start.date()}
+        baseline_min_days = int(knowledge.biomarkers[biomarker].get('baseline_min_days', INITIAL_MIN_DAYS))
         baselines.append(robust(before, biomarker, 'initial_stable', 'all', preflight_start, profile.mission_start,
-                                INITIAL_MIN_DAYS, synthetic))
+                                baseline_min_days, synthetic))
         if cycle.applies(profile, knowledge) and any(
                 m['biomarker'] == biomarker and m.get('separate_baseline') for m in knowledge.cycle['modifiers']):
             for group in sorted(set(cycle.BASELINE_GROUP.values())):

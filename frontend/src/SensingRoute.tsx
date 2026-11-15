@@ -10,17 +10,17 @@ import type {
 } from './types';
 
 const confirmationText: Record<ConfirmationStateName, string> = {
-  not_requested: 'No solicitada',
-  requested: 'Solicitada',
-  within_pattern: 'Dentro del patrón',
-  deviates: 'Desviada',
+  not_requested: 'Not requested',
+  requested: 'Requested',
+  within_pattern: 'Within pattern',
+  deviates: 'Deviates',
 };
 const stageText: Record<PathwayStage, string> = {
-  quiet: 'Capa 1 estable: no se justifica medir más.',
-  unmonitored: 'Capa 1 sin datos suficientes para decidir.',
-  requested: 'Señal en capa 1. Falta la medición de capa 2 solicitada.',
-  not_confirmed: 'Señal en capa 1 que la capa 2 no confirma.',
-  review: 'La capa 2 confirma la desviación de la capa 1.',
+  quiet: 'Layer 1 is stable; no additional measurement is indicated.',
+  unmonitored: 'Layer 1 does not have enough data to decide.',
+  requested: 'Layer 1 signal detected. The requested Layer 2 measurement is pending.',
+  not_confirmed: 'Layer 2 did not confirm the Layer 1 signal.',
+  review: 'Layer 2 confirms the Layer 1 deviation.',
 };
 
 /**
@@ -54,14 +54,14 @@ export default function SensingRoute({
   );
   const active = route.stage !== 'quiet' && route.stage !== 'unmonitored';
   return (
-    <section className={`sensing-route stage-${route.stage}`} aria-label={`Ruta ${route.name}`}>
+    <section className={`sensing-route stage-${route.stage}`} aria-label={`Pathway ${route.name}`}>
       <header>
         <h2>{route.name}</h2>
-        {route.demonstration && <span className="sensing-badge">Ruta demostrativa</span>}
+        {route.demonstration && <span className="sensing-badge">Demonstration pathway</span>}
       </header>
       <ol>
         <li className={route.triggered_by.length ? 'is-hit' : ''}>
-          <span className="sensing-step">Capa 1 · Señal continua</span>
+          <span className="sensing-step">Layer 1 · Continuous signal</span>
           <div className="sensing-chips">
             {route.triggers.map((id) => (
               <button
@@ -73,22 +73,22 @@ export default function SensingRoute({
               </button>
             ))}
             {route.planned_signals.map((label) => (
-              <span key={label} className="sensing-chip planned" title="Propuesta; sin datos">
+              <span key={label} className="sensing-chip planned" title="Proposed; no data">
                 {label}
               </span>
             ))}
           </div>
         </li>
         <li className={active ? 'is-hit' : ''}>
-          <span className="sensing-step">Anomalía</span>
+          <span className="sensing-step">Anomaly</span>
           <p>
             {route.triggered_by.length
-              ? `Desviación del patrón personal en ${route.triggered_by.map(name).join(', ')}.`
-              : 'Sin desviación en las señales de capa 1.'}
+              ? `Deviation from the personal pattern in ${route.triggered_by.map(name).join(', ')}.`
+              : 'No deviation in Layer 1 signals.'}
           </p>
         </li>
         <li className={route.confirmations.some((c) => c.state !== 'not_requested') ? 'is-hit' : ''}>
-          <span className="sensing-step">Capa 2 · Medición activada</span>
+          <span className="sensing-step">Layer 2 · Triggered measurement</span>
           <div className="sensing-chips">
             {route.confirmations.map((c) => (
               <button
@@ -102,14 +102,14 @@ export default function SensingRoute({
           </div>
         </li>
         <li className={route.stage === 'review' ? 'is-hit' : ''}>
-          <span className="sensing-step">Interpretación</span>
+          <span className="sensing-step">Interpretation</span>
           <p>{stageText[route.stage]}</p>
         </li>
         <li>
-          <span className="sensing-step">Recomendación</span>
-          <p>{reviewed ? reviewed.suggested_check : 'Pendiente de revisión médica'}</p>
+          <span className="sensing-step">Recommendation</span>
+          <p>{reviewed ? reviewed.suggested_check : 'Pending medical review'}</p>
           <button className="sensing-link" onClick={onProtocols}>
-            Referencias y autorización <ArrowUpRight size={12} />
+            References and authorization <ArrowUpRight size={12} />
           </button>
         </li>
       </ol>

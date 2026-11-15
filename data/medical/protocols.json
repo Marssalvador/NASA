@@ -399,6 +399,44 @@
         }
       ],
       "source_document": "kb 2.8"
+    },
+    {
+      "id": "jugular.doppler_stasis_review",
+      "risk_id": "jugular_doppler_review",
+      "title": "Estasis yugular informada en Doppler",
+      "alert_level": "yellow",
+      "level_source": "engine_assumption",
+      "trigger_rule": {
+        "biomarker": "jugular_stasis_reported",
+        "feature": "latest_value",
+        "at_least": 1
+      },
+      "countermeasures": [
+        {
+          "category": "escalation",
+          "text": "Revisar el informe y la calidad del Doppler con el equipo m?dico de vuelo; repetir seg?n protocolo autorizado."
+        }
+      ],
+      "source_document": "spec"
+    },
+    {
+      "id": "jugular.doppler_possible_thrombus",
+      "risk_id": "jugular_doppler_review",
+      "title": "Posible trombo informado por Doppler externo",
+      "alert_level": "orange",
+      "level_source": "engine_assumption",
+      "trigger_rule": {
+        "biomarker": "jugular_thrombus_suspected_reported",
+        "feature": "latest_value",
+        "at_least": 1
+      },
+      "countermeasures": [
+        {
+          "category": "escalation",
+          "text": "Escalar el hallazgo informado para evaluaci?n prioritaria por el equipo m?dico de vuelo. El sistema no confirma trombosis ni indica tratamiento."
+        }
+      ],
+      "source_document": "spec"
     }
   ],
   "emergency_rules": [

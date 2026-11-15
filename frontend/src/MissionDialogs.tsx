@@ -34,26 +34,26 @@ export default function MissionDialogs({
     );
   if (modal === 'detail')
     return (
-      <Modal title={definition?.name ?? 'Análisis estadístico'} onClose={onClose}>
-        {current ? <AnalysisDetail a={current} d={definition} /> : <p>Sin análisis disponible.</p>}
+      <Modal title={definition?.name ?? 'Statistical analysis'} onClose={onClose}>
+        {current ? <AnalysisDetail a={current} d={definition} /> : <p>No analysis available.</p>}
       </Modal>
     );
   if (modal === 'registry')
     return (
-      <Modal title="Registro de biomarcadores" wide onClose={onClose}>
+      <Modal title="Biomarker registry" wide onClose={onClose}>
         <p className="muted">
-          {registry.length} variables habilitadas. Edita data/biomarker_registry.json y actualiza el
-          registro para incorporar nuevas variables.
+          {registry.length} variables enabled. Edit data/biomarker_registry.json and refresh the
+          registry to add new variables.
         </p>
         <div className="table-scroll">
           <table>
             <thead>
               <tr>
                 <th>Variable</th>
-                <th>ID / unidad</th>
-                <th>Sistema</th>
-                <th>Método</th>
-                <th>Frecuencia</th>
+                <th>ID / unit</th>
+                <th>System</th>
+                <th>Method</th>
+                <th>Frequency</th>
               </tr>
             </thead>
             <tbody>
@@ -74,34 +74,34 @@ export default function MissionDialogs({
           </table>
         </div>
         <p className="small muted">
-          Las frecuencias son configuración de adquisición, no límites de seguridad. Las referencias
-          del registro son contexto de investigación, sin validación clínica de esta aplicación.
+          Frequencies configure data acquisition; they are not safety limits. Registry references
+          provide research context and are not clinically validated by this application.
         </p>
         <button className="button primary" onClick={refresh}>
-          Actualizar registro
+          Refresh registry
         </button>
       </Modal>
     );
   if (modal === 'protocols' && data)
     return (
-      <Modal title="Hallazgos y comprobaciones" wide onClose={onClose}>
+      <Modal title="Findings and checks" wide onClose={onClose}>
         {data.events.length > 0 && (
           <div className="emergency-box">
-            Emergencia por síntoma declarado:{' '}
+            Emergency based on reported symptoms:{' '}
             {data.events
-              .map((e) => `${e.symptom} (${e.is_synthetic ? 'sintético' : 'real'})`)
+              .map((e) => `${e.symptom} (${e.is_synthetic ? 'synthetic' : 'real'})`)
               .join(', ')}
-            . Activar el protocolo aprobado de misión; esta demo no incluye un protocolo clínico
-            validado.
+            . Follow the approved mission protocol; this demo does not include a clinically
+            validated protocol.
           </div>
         )}
         <p className="muted">
-          Alertas estadísticas de investigación, independientes de diagnósticos. Las intervenciones
-          médicas requieren un protocolo local revisado.
+          Research statistical alerts, separate from diagnoses. Medical interventions require a
+          locally reviewed protocol.
         </p>
         {data.findings.length === 0 && (
           <div className="success-box">
-            Sin hallazgos estadísticos en las observaciones disponibles.
+            No statistical findings in the available observations.
           </div>
         )}
         {data.findings.map((f, i) => (
@@ -113,9 +113,9 @@ export default function MissionDialogs({
             </p>
             <p className="amber">{data.guidance[i]?.suggested_check}</p>
             <div className="protocol-meta">
-              <span>Referencia: {data.guidance[i]?.reference}</span>
-              <span>Autorización: {data.guidance[i]?.authorization_level}</span>
-              <span>Validación: {data.guidance[i]?.validation_status}</span>
+              <span>Reference: {data.guidance[i]?.reference}</span>
+              <span>Authorization: {data.guidance[i]?.authorization_level}</span>
+              <span>Validation: {data.guidance[i]?.validation_status}</span>
             </div>
           </article>
         ))}
@@ -123,58 +123,58 @@ export default function MissionDialogs({
     );
   if (modal === 'model' && data)
     return (
-      <Modal title="Motor de IA local" onClose={onClose}>
+      <Modal title="Local AI engine" onClose={onClose}>
         <p>
-          <strong>{data.prediction?.model_id ?? 'No disponible'}</strong> ·{' '}
+          <strong>{data.prediction?.model_id ?? 'Not available'}</strong> ·{' '}
           {data.prediction?.model_version}
         </p>
         <p>{data.prediction?.explanation ?? data.model_error}</p>
         <dl className="detail-grid">
           <div>
-            <dt>Tipo de salida</dt>
+            <dt>Output type</dt>
             <dd>{data.prediction?.prediction_kind}</dd>
           </div>
           <div>
-            <dt>Validación</dt>
+            <dt>Validation</dt>
             <dd>{data.prediction?.validation_status}</dd>
           </div>
           <div>
-            <dt>Calidad de entrada</dt>
+            <dt>Input quality</dt>
             <dd>{data.prediction?.input_quality}</dd>
           </div>
           <div>
-            <dt>Incertidumbre</dt>
-            <dd>{data.prediction?.uncertainty ?? 'No estimada'}</dd>
+            <dt>Uncertainty</dt>
+            <dd>{data.prediction?.uncertainty ?? 'Not estimated'}</dd>
           </div>
         </dl>
-        <h3>Variables sin evaluar</h3>
-        <p>{data.prediction?.missing_variables.join(', ') || 'Ninguna'}</p>
+        <h3>Unevaluated variables</h3>
+        <p>{data.prediction?.missing_variables.join(', ') || 'None'}</p>
         <pre>{JSON.stringify(data.prediction?.prediction, null, 2)}</pre>
         <p className="small muted">
-          No es una probabilidad clínica. Adaptador configurable mediante AEGIS_MODEL_MODULE.
+          This is not a clinical probability. Configure the adapter with HELIOS_MODEL_MODULE.
         </p>
       </Modal>
     );
   if (modal === 'credits')
     return (
-      <Modal title="Atlas, fuentes y licencia" onClose={onClose}>
+      <Modal title="Atlas, sources, and license" onClose={onClose}>
         <p>
-          La escena utiliza geometría anatómica real. Las imágenes de referencia orientan la
-          composición y los materiales; no forman parte del modelo ni se usan como texturas.
+          The scene uses real anatomical geometry. Reference images guide the composition and
+          materials; they are not part of the model and are not used as textures.
         </p>
         <h3>Z-Anatomy / BodyParts3D</h3>
         <p>
-          Atlas: Gauthier Kervyn y colaboradores; geometría original de Kousaku Okubo / The Database
+          Atlas: Gauthier Kervyn et al.; original geometry by Kousaku Okubo / The Database
           Center for Life Science. Exportaciones GLB de pernelluvsya/atlas-proto, bajo CC BY-SA 4.0.
         </p>
         <p>
-          La piel y los riñones proceden directamente de BodyParts3D 4.0, © The Database Center for
-          Life Science, bajo CC BY 4.0. Se han excluido del atlas las piezas de oído y riñón con
-          excepciones de licencia y las adiciones no utilizadas.
+          Skin and kidneys come directly from BodyParts3D 4.0, © The Database Center for Life Science,
+          under CC BY 4.0. Ear and kidney parts with licensing exceptions, and unused additions,
+          have been excluded from the atlas.
         </p>
         <p>
-          AEGIS adapta selección, agrupación, materiales y compresión. Las mallas derivadas del
-          atlas se distribuyen bajo CC BY-SA 4.0. Créditos, cambios y hashes:
+          HELIOS adapts selection, grouping, materials, and compression. Meshes derived from the
+          atlas are distributed under CC BY-SA 4.0. Credits, changes, and hashes:
           assets/models/ATTRIBUTION.md y source-manifest.json.
         </p>
         <p>
@@ -203,8 +203,8 @@ export default function MissionDialogs({
           </a>
         </p>
         <p className="muted">
-          Atlas genérico educativo; no es un escáner del astronauta. Datos sintéticos, sin
-          validación clínica. Los colores describen la evaluación de mediciones, no daño anatómico.
+          Generic educational atlas; not a scan of the astronaut. Synthetic data, not clinically
+          validated. Colors describe measurement assessments, not anatomical damage.
         </p>
       </Modal>
     );

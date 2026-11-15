@@ -1,25 +1,25 @@
 import type { Analysis, Biomarker, RiskPathway, Status } from './types';
 import { regionSites } from './anatomyConfig';
 export const statusText: Record<Status, string> = {
-  stable: 'Sin desviaciones detectadas',
-  review: 'Revisión necesaria',
-  emergency: 'Emergencia por protocolo',
-  insufficient_data: 'Datos insuficientes',
+  stable: 'No deviations detected',
+  review: 'Review needed',
+  emergency: 'Protocol emergency',
+  insufficient_data: 'Insufficient data',
 };
 export const shortStatus: Record<Status, string> = {
-  stable: 'Sin desviaciones',
-  review: 'Revisión',
-  emergency: 'Emergencia',
-  insufficient_data: 'Sin evaluar',
+  stable: 'No deviations',
+  review: 'Review',
+  emergency: 'Emergency',
+  insufficient_data: 'Not assessed',
 };
 export const regions = [
-  { id: 'heart', name: 'Corazón', system: 'Cardiovascular', code: '01' },
-  { id: 'lungs', name: 'Pulmones', system: 'Respiratorio', code: '02' },
-  { id: 'brain', name: 'Cerebro', system: 'Neurológico', code: '03' },
-  { id: 'muscles', name: 'Músculos', system: 'Muscular', code: '04' },
-  { id: 'skeleton', name: 'Esqueleto', system: 'Óseo', code: '05' },
-  { id: 'kidneys', name: 'Riñones', system: 'Renal', code: '06' },
-  { id: 'metabolic', name: 'Metabolismo e inmunidad', system: 'Metabólico · inmune', code: '07' },
+  { id: 'heart', name: 'Heart', system: 'Cardiovascular', code: '01' },
+  { id: 'lungs', name: 'Lungs', system: 'Respiratory', code: '02' },
+  { id: 'brain', name: 'Brain', system: 'Neurological', code: '03' },
+  { id: 'muscles', name: 'Muscles', system: 'Muscular', code: '04' },
+  { id: 'skeleton', name: 'Skeleton', system: 'Skeletal', code: '05' },
+  { id: 'kidneys', name: 'Kidneys', system: 'Renal', code: '06' },
+  { id: 'metabolic', name: 'Metabolism and immunity', system: 'Metabolic · immune', code: '07' },
 ];
 export function regionStatus(items: Analysis[]): Status {
   if (!items.length) return 'insufficient_data';
@@ -29,9 +29,9 @@ export function regionStatus(items: Analysis[]): Status {
   return 'stable';
 }
 export const fmt = (x: number | null | undefined, digits = 1) =>
-  x == null ? '—' : new Intl.NumberFormat('es-ES', { maximumFractionDigits: digits }).format(x);
+  x == null ? '—' : new Intl.NumberFormat('en-US', { maximumFractionDigits: digits }).format(x);
 export const dateTime = (x: string) =>
-  new Date(x).toLocaleString('es-ES', {
+  new Date(x).toLocaleString('en-US', {
     timeZone: 'UTC',
     day: '2-digit',
     month: 'short',
@@ -52,7 +52,8 @@ export async function api<T>(path: string, body?: unknown, signal?: AbortSignal)
   );
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: response.statusText }));
-    throw new Error(typeof error.detail === 'string' ? error.detail : JSON.stringify(error.detail));
+    const detail = typeof error.detail === 'string' ? error.detail : JSON.stringify(error.detail);
+    throw new Error(`${path}: HTTP ${response.status} ${detail}`);
   }
   return response.json();
 }
@@ -115,14 +116,14 @@ export function buildMarkers(
     const z = a.deviation_z;
     const detail =
       z == null
-        ? 'Desviación del patrón personal'
-        : `${z > 0 ? '↑' : '↓'} ${fmt(Math.abs(z), 1)} σ sobre su patrón`;
+        ? 'Deviation from personal pattern'
+        : `${z > 0 ? '↑' : '↓'} ${fmt(Math.abs(z), 1)} σ from personal pattern`;
     const site = siteOf(d),
       prior = bySite.get(site);
     bySite.set(
       site,
       prior
-        ? { ...prior, title: `${prior.title} · ${shortName(d)}`, detail: 'Varias desviaciones' }
+        ? { ...prior, title: `${prior.title} · ${shortName(d)}`, detail: 'Multiple deviations' }
         : { id: `alert-${site}`, site, region: d.body_region, tone: 'alert', title: shortName(d), detail },
     );
   }
@@ -137,7 +138,7 @@ export function buildMarkers(
         region: d.body_region,
         tone: 'request',
         title: shortName(d),
-        detail: 'Medición de capa 2 solicitada',
+        detail: 'Layer 2 measurement requested',
       });
     }
   return [...bySite.values()];

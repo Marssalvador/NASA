@@ -1,46 +1,78 @@
 [
   {
     "id": "bone_resorption",
-    "name": "Resorción ósea",
+    "name": "Bone resorption",
     "body_region": "skeleton",
-    "triggers": ["grip_strength"],
-    "confirmations": ["ctx_i", "p1np"],
-    "planned_signals": ["Actividad física y carga de ejercicio (acelerometría)"],
-    "rationale": "La descarga mecánica en microgravedad se asocia a pérdida musculoesquelética. Una caída sostenida de la fuerza respecto al patrón personal justifica solicitar marcadores de remodelado óseo.",
-    "evidence": "Ruta de demostración. El aumento de CTX-I en vuelo está descrito en la literatura de NASA; usar la fuerza de prensión como disparador es una hipótesis de diseño pendiente de validación.",
+    "triggers": [
+      "grip_strength"
+    ],
+    "confirmations": [
+      "ctx_i",
+      "p1np"
+    ],
+    "planned_signals": [
+      "Physical activity and exercise load (accelerometry)"
+    ],
+    "rationale": "Mechanical unloading in microgravity is associated with musculoskeletal loss. A sustained decline in strength relative to the personal pattern can justify requesting bone-turnover markers.",
+    "evidence": "Demonstration pathway. Increased CTX-I during flight has been described in NASA literature; using grip strength as a trigger is a design hypothesis that needs validation.",
     "demonstration": true
   },
   {
     "id": "renal_stones",
-    "name": "Cálculos renales",
+    "name": "Kidney stone risk",
     "body_region": "kidneys",
-    "triggers": ["ctx_i"],
-    "confirmations": ["urinary_calcium", "creatinine"],
-    "planned_signals": ["Electrolitos e hidratación en sudor (sensor experimental)", "pH urinario", "Citrato urinario"],
-    "rationale": "La resorción ósea libera calcio que se excreta por orina. Una desviación de CTX-I justifica revisar calcio urinario y función renal.",
-    "evidence": "Hipótesis de diseño. Sin umbrales clínicos validados en esta demo.",
+    "triggers": [
+      "ctx_i"
+    ],
+    "confirmations": [
+      "urinary_calcium",
+      "creatinine"
+    ],
+    "planned_signals": [
+      "Sweat electrolytes and hydration (experimental sensor)",
+      "urine pH",
+      "urinary citrate"
+    ],
+    "rationale": "Bone resorption releases calcium that is excreted in urine. A change in CTX-I can justify reviewing urinary calcium and kidney function.",
+    "evidence": "Design hypothesis. No clinically validated thresholds in this demo.",
     "demonstration": false
   },
   {
     "id": "inflammation_overtraining",
-    "name": "Inflamación o sobreentrenamiento",
+    "name": "Inflammation or overtraining",
     "body_region": "metabolic",
-    "triggers": ["temperature", "hrv", "sleep", "cortisol"],
-    "confirmations": ["il6", "crp"],
-    "planned_signals": ["Lactato (sensor experimental)", "Cortisol continuo en sudor o fluido intersticial (experimental)"],
-    "rationale": "Cambios combinados en temperatura, variabilidad cardíaca, sueño o cortisol pueden justificar una analítica inflamatoria.",
-    "evidence": "Hipótesis de diseño. Los sensores continuos de lactato y cortisol no están validados para uso en misión.",
+    "triggers": [
+      "temperature",
+      "hrv",
+      "sleep",
+      "cortisol"
+    ],
+    "confirmations": [
+      "il6",
+      "crp"
+    ],
+    "planned_signals": [
+      "Lactate (experimental sensor)",
+      "continuous cortisol in sweat or interstitial fluid (experimental)"
+    ],
+    "rationale": "Combined changes in temperature, heart rate variability, sleep, or cortisol may justify an inflammatory lab panel.",
+    "evidence": "Design hypothesis. Continuous lactate and cortisol sensors are not validated for mission use.",
     "demonstration": false
   },
   {
     "id": "cardiovascular_orthostatic",
-    "name": "Alteración cardiovascular u ortostática",
+    "name": "Cardiovascular or orthostatic changes",
     "body_region": "heart",
-    "triggers": ["heart_rate", "hrv"],
-    "confirmations": ["systolic_bp"],
+    "triggers": [
+      "heart_rate",
+      "hrv"
+    ],
+    "confirmations": [
+      "systolic_bp"
+    ],
     "planned_signals": [],
-    "rationale": "Una desviación sostenida de frecuencia cardíaca o HRV justifica una medición de presión arterial y una evaluación complementaria.",
-    "evidence": "Hipótesis de diseño. La interpretación requiere protocolo médico revisado.",
+    "rationale": "A sustained change in heart rate or HRV can justify a blood pressure measurement and further assessment.",
+    "evidence": "Design hypothesis. Interpretation requires a reviewed medical protocol.",
     "demonstration": false
   }
 ]

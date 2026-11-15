@@ -32,8 +32,15 @@ def daily_features(profile: Profile, observations: list[Observation], events: li
     first_day = max((as_of - timedelta(days=LOOKBACK_DAYS - 1)).date(), profile.mission_start.date())
     for biomarker in sorted({o.biomarker_id for o in observations}):
         series = memory.daily([o for o in observations if o.measured_at <= as_of], knowledge, biomarker)
+        definition = knowledge.biomarkers[biomarker]
+        if definition.get('sample_type') in {'dynamometry', 'electrical_impedance_myography'}:
+            lookback = timedelta(hours=definition.get('expected_frequency', 168) * 2)
+            test_days = [day for day in series if day >= max(profile.mission_start.date(), (as_of - lookback).date())]
+            first_test_day = test_days[-2] if test_days else first_day
+        else:
+            first_test_day = first_day
         for day, (value, ids) in series.items():
-            if day < first_day or day > as_of.date():
+            if day < first_test_day or day > as_of.date():
                 continue
             reference, mod, phase = reference_for(day, biomarker, profile, events, knowledge, baselines)
             if not reference or reference.status != 'accepted':

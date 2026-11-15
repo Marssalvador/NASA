@@ -275,6 +275,11 @@
   gap: 9px;
   margin-top: calc(clamp(95px, 16vh, 160px));
   margin-bottom: 32px;
+  max-height: min(45svh, 440px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #596272 transparent;
 }
 .anatomy-system {
   display: flex;
@@ -285,6 +290,7 @@
   text-align: left;
   width: 100%;
   height: 55px;
+  flex-shrink: 0;
   font-size: 16px;
   letter-spacing: -0.3px;
   color: #756e68;
@@ -427,11 +433,6 @@
   place-items: center;
   background: #fff8;
 }
-.is-focused .anatomy-system-buttons {
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-}
 .is-focused .anatomy-mission-context {
   margin-top: auto;
   max-width: 190px;
@@ -525,6 +526,154 @@
 }
 .anatomy-metrics {
   margin-bottom: 30px;
+}
+.anatomy-region-scope {
+  color: var(--secondary);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+.anatomy-mass-card {
+  margin: 0 0 20px;
+  padding: 15px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+}
+.anatomy-mass-card > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.anatomy-mass-card strong {
+  color: #ff665d;
+  font-size: 23px;
+  font-variant-numeric: tabular-nums;
+}
+.anatomy-mass-card strong.loss {
+  color: var(--alert);
+}
+.anatomy-mass-card p,
+.anatomy-mass-card small {
+  display: block;
+  color: var(--secondary);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 8px 0 0;
+}
+.anatomy-cycle-note {
+  color: var(--secondary);
+  font-size: 10px;
+  line-height: 1.4;
+  margin-top: 5px;
+}
+.performance-panel,
+.risk-parameters {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.performance-scope,
+.performance-caution {
+  color: var(--secondary);
+  font-size: 11px;
+  line-height: 1.55;
+  margin: 0;
+}
+.exercise-options,
+.exercise-limits,
+.exercise-protocol-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+.exercise-options article,
+.exercise-limits > div,
+.risk-parameter-card {
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 12px;
+  background: var(--panel);
+}
+.exercise-options article span,
+.exercise-limits > div span,
+.risk-parameter-card small {
+  display: block;
+  color: var(--secondary);
+  font-size: 10px;
+  line-height: 1.45;
+}
+.exercise-options article strong,
+.exercise-limits > div strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.exercise-protocol-fields label {
+  display: grid;
+  gap: 6px;
+  color: var(--secondary);
+  font-size: 10px;
+}
+.exercise-protocol-fields input {
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.performance-source {
+  color: var(--cyan);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.risk-parameter-card header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.risk-parameter-card header strong {
+  font-size: 12px;
+}
+.risk-parameter-card header span {
+  flex-shrink: 0;
+  font-size: 9px;
+  color: var(--secondary);
+  text-align: right;
+}
+.risk-parameter-card header .review {
+  color: var(--alert);
+}
+.risk-parameter-card header .stable {
+  color: var(--cyan);
+}
+.risk-parameter-card p {
+  color: var(--secondary);
+  font-size: 10px;
+  line-height: 1.5;
+  margin: 8px 0;
+}
+.risk-parameter-card small + small {
+  margin-top: 4px;
+}
+.anatomy-app[data-theme='dark'] .exercise-options article,
+.anatomy-app[data-theme='dark'] .exercise-limits > div,
+.anatomy-app[data-theme='dark'] .risk-parameter-card,
+.anatomy-app[data-theme='dark'] .exercise-protocol-fields input {
+  background: var(--glass-raised);
+  border-color: var(--hairline);
+}
+@media (max-width: 540px) {
+  .exercise-options,
+  .exercise-limits,
+  .exercise-protocol-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .anatomy-metric {
   display: flex;
@@ -2157,14 +2306,17 @@ button.sensing-chip:hover {
   padding: 22px;
   border-radius: 16px;
 }
-.system-assessment > div:first-child {
-  background: #f2e2de66;
-}
+.system-assessment > .assessment-summary.status-stable,
+.system-assessment > .assessment-summary.status-insufficient_data { background: #e8eef477; }
+.system-assessment > .assessment-summary.status-review,
+.system-assessment > .assessment-summary.status-emergency { background: #f2e2de66; }
 .system-assessment svg {
   margin-top: 1px;
   flex-shrink: 0;
-  color: #9d6256;
+  color: #5d8db5;
 }
+.system-assessment > .assessment-summary.status-review svg,
+.system-assessment > .assessment-summary.status-emergency svg { color: #b84c43; }
 .system-assessment h2 {
   font-size: 17px;
   font-weight: 600;
@@ -2176,6 +2328,24 @@ button.sensing-chip:hover {
   line-height: 1.65;
   color: #74685f;
 }
+.assessment-readings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+.assessment-reading {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid #ffffff20;
+  border-radius: 9px;
+  background: #ffffff08;
+}
+.assessment-reading > span { font-size: 10px; line-height: 1.35; color: var(--secondary); }
+.assessment-reading > strong { font-size: 14px; font-weight: 600; color: var(--ink); }
+.assessment-reading > small { margin: 0; }
 .system-assessment details {
   padding: 8px 5px;
 }
@@ -2550,9 +2720,16 @@ button.sensing-chip:hover {
   color: var(--alert);
 }
 .anatomy-app[data-theme='dark'] .anatomy-empty,
+.anatomy-app[data-theme='dark'] .anatomy-region-scope,
+.anatomy-app[data-theme='dark'] .anatomy-mass-card p,
+.anatomy-app[data-theme='dark'] .anatomy-mass-card small,
 .anatomy-app[data-theme='dark'] .anatomy-detail > p,
 .anatomy-app[data-theme='dark'] .anatomy-trend-footnote {
   color: var(--ink-3);
+}
+.anatomy-app[data-theme='dark'] .anatomy-mass-card {
+  background: var(--glass-raised);
+  border-color: var(--hairline);
 }
 .anatomy-app[data-theme='dark'] .anatomy-detail > div > button {
   color: var(--ink);
@@ -2569,7 +2746,13 @@ button.sensing-chip:hover {
   box-shadow: inset 0 0 0 1px var(--hairline);
   color: var(--ink-3);
 }
-.anatomy-app[data-theme='dark'] .system-assessment > div:first-child {
+.anatomy-app[data-theme='dark'] .system-assessment > .assessment-summary.status-stable,
+.anatomy-app[data-theme='dark'] .system-assessment > .assessment-summary.status-insufficient_data {
+  background: rgba(66, 111, 151, 0.10);
+  box-shadow: inset 0 0 0 1px rgba(117, 173, 220, 0.18);
+}
+.anatomy-app[data-theme='dark'] .system-assessment > .assessment-summary.status-review,
+.anatomy-app[data-theme='dark'] .system-assessment > .assessment-summary.status-emergency {
   background: var(--alert-soft);
   box-shadow: inset 0 0 0 1px rgba(255, 106, 85, 0.22);
 }
@@ -2583,9 +2766,9 @@ button.sensing-chip:hover {
 .anatomy-app[data-theme='dark'] .system-assessment small {
   color: var(--ink-4);
 }
-.anatomy-app[data-theme='dark'] .system-assessment svg {
-  color: var(--alert);
-}
+.anatomy-app[data-theme='dark'] .system-assessment svg { color: #8bbde5; }
+.anatomy-app[data-theme='dark'] .system-assessment > .assessment-summary.status-review svg,
+.anatomy-app[data-theme='dark'] .system-assessment > .assessment-summary.status-emergency svg { color: var(--alert); }
 .anatomy-app[data-theme='dark'] .sensing-route {
   background: rgba(255, 255, 255, 0.03);
   box-shadow: inset 0 0 0 1px var(--hairline);
@@ -2736,4 +2919,192 @@ button.sensing-chip:hover {
 .anatomy-app[data-theme='dark'] .anatomy-theme-toggle:hover {
   color: var(--ink);
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* HELIOS mission readouts frame the anatomy model like a compact flight console. */
+.anatomy-signal-panel {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0 20px;
+}
+.anatomy-signal-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px 10px;
+  color: var(--secondary);
+  font-size: 10px;
+  letter-spacing: 1.4px;
+}
+.anatomy-signal-heading small {
+  color: var(--secondary);
+  font-size: 8px;
+  letter-spacing: .7px;
+}
+.anatomy-signal-row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 14px;
+  align-items: center;
+  gap: 10px;
+  min-height: 61px;
+  padding: 6px 5px;
+  text-align: left;
+  color: var(--secondary);
+  border-bottom: 1px solid var(--line);
+}
+.anatomy-signal-row > svg:first-child { color: #92b9d7; }
+.anatomy-signal-row > svg:last-child { color: var(--secondary); }
+.anatomy-signal-row:hover { background: rgba(255,255,255,.04); }
+.anatomy-signal-copy { display: grid; gap: 2px; min-width: 0; }
+.anatomy-signal-copy small { color: var(--secondary); font-size: 11px; line-height: 1.3; }
+.anatomy-signal-copy strong { color: var(--ink); font-size: 20px; font-weight: 500; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.anatomy-signal-copy em { color: var(--secondary); font-size: 10px; font-style: normal; font-weight: 400; }
+.anatomy-signal-copy i { color: var(--secondary); font-size: 9px; font-style: normal; }
+.anatomy-zone-picker { border-top: 1px solid var(--line); margin: 2px 0 20px; }
+.anatomy-zone-picker > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 5px; color: var(--secondary); font-size: 11px; cursor: pointer; list-style: none;
+}
+.anatomy-zone-picker > summary::-webkit-details-marker { display: none; }
+.anatomy-zone-picker[open] > summary > svg { transform: rotate(180deg); }
+.anatomy-zone-picker .anatomy-system-buttons {
+  margin: 0 0 12px; max-height: 43vh; overflow-y: auto; gap: 4px;
+}
+.anatomy-zone-picker .anatomy-system { height: 42px; padding: 8px 10px; gap: 12px; font-size: 12px; }
+.anatomy-zone-picker .anatomy-system > svg { width: 19px; height: 19px; }
+.anatomy-ultrasound-image {
+  display: block; width: 100%; max-height: 150px; margin: 0 0 12px;
+  aspect-ratio: 4 / 3; object-fit: cover; border-radius: 9px;
+  border: 1px solid var(--line); background: #05070b;
+}
+.anatomy-ultrasound-frame { position: relative; }
+.anatomy-ultrasound-frame > span {
+  position: absolute; left: 8px; bottom: 19px; padding: 4px 7px;
+  border: 1px solid var(--hairline-strong); border-radius: 5px;
+  background: rgba(4, 6, 11, .78); color: #d5deea; font-size: 8px;
+  letter-spacing: .45px; text-transform: uppercase;
+}
+.atlas-tile {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-repeat: no-repeat;
+  background-color: #07090d;
+  border: 1px solid var(--hairline-strong, var(--line));
+  border-radius: 10px;
+}
+.anatomy-radiograph-card {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 18px;
+}
+.anatomy-radiograph-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--secondary);
+  font-size: 9px;
+  letter-spacing: 1.1px;
+}
+.anatomy-radiograph-heading small,
+.anatomy-image-disclaimer,
+.exercise-visual-card small {
+  color: var(--secondary);
+  font-size: 9px;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+.anatomy-radiograph-placeholder,
+.exercise-image-prompt {
+  display: grid;
+  place-items: center;
+  min-height: 84px;
+  padding: 14px;
+  border: 1px dashed var(--hairline-strong, var(--line));
+  border-radius: 10px;
+  color: var(--secondary);
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.anatomy-radiograph-tile {
+  width: min(100%, 190px);
+  justify-self: center;
+}
+.anatomy-selected-region-visual { display: grid; gap: 7px; margin: 0 0 14px; }
+.anatomy-selected-region-visual-heading {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  color: var(--secondary); font-size: 10px; letter-spacing: .5px;
+}
+.anatomy-selected-region-visual-heading small { font-size: 9px; letter-spacing: 0; }
+.anatomy-selected-region-tile { width: min(100%, 190px); justify-self: center; }
+.exercise-visual-card {
+  display: grid;
+  grid-template-columns: minmax(115px, 42%) minmax(0, 1fr);
+  gap: 10px 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.exercise-visual-tile { grid-row: span 2; }
+.exercise-visual-card > div:nth-child(2) { display: grid; gap: 6px; }
+.exercise-visual-card > div:nth-child(2) span {
+  color: var(--secondary); font-size: 8px; letter-spacing: .8px;
+}
+.exercise-visual-card > div:nth-child(2) strong {
+  color: var(--ink); font-size: 12px; line-height: 1.4;
+}
+.exercise-visual-card small { grid-column: 1 / -1; }
+.anatomy-app[data-theme='dark'] .exercise-visual-card {
+  background: var(--glass-raised); border-color: var(--hairline);
+}
+.anatomy-app[data-theme='dark'] .anatomy-signal-heading,
+.anatomy-app[data-theme='dark'] .anatomy-signal-heading small,
+.anatomy-app[data-theme='dark'] .anatomy-signal-row,
+.anatomy-app[data-theme='dark'] .anatomy-zone-picker > summary { color: var(--ink-3); }
+.anatomy-app[data-theme='dark'] .anatomy-signal-copy small,
+.anatomy-app[data-theme='dark'] .anatomy-signal-copy em,
+.anatomy-app[data-theme='dark'] .anatomy-signal-copy i { color: var(--ink-3); }
+.anatomy-app[data-theme='dark'] .anatomy-signal-copy strong { color: #f4f7fb; }
+
+@media (min-width: 901px) {
+  .anatomy-navigation {
+    width: clamp(300px, 28vw, 380px);
+    padding: 12px 26px 45px 34px;
+  }
+  .anatomy-signal-panel { margin-top: 0; }
+  .anatomy-system-buttons,
+  .anatomy-zone-picker .anatomy-system-buttons { margin-top: 0; }
+  .anatomy-stage,
+  .anatomy-stage.focused { left: 0; right: 0; }
+  .anatomy-ground-shadow { left: 50%; }
+  .anatomy-inspector {
+    right: 22px; width: clamp(285px, 24vw, 350px); padding-left: 22px;
+  }
+  .anatomy-view-controls { left: 50%; right: auto; transform: translateX(-50%); }
+  .anatomy-gesture { left: 50%; right: auto; transform: translateX(-50%); }
+}
+@media (max-width: 1200px) and (min-width: 901px) {
+  .anatomy-navigation { width: 260px; padding-left: 24px; padding-right: 18px; }
+  .anatomy-stage,
+  .anatomy-stage.focused { left: 0; right: 0; }
+  .anatomy-inspector { right: 16px; width: 278px; padding-left: 16px; }
+  .anatomy-signal-row { min-height: 56px; }
+  .anatomy-signal-copy strong { font-size: 18px; }
+}
+@media (max-width: 900px) {
+  .anatomy-signal-panel { margin: 0 24px 12px; }
+  .anatomy-signal-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 15px; }
+  .anatomy-signal-heading { grid-column: 1 / -1; }
+  .anatomy-signal-row { min-height: 56px; }
+  .anatomy-zone-picker { margin: 0 24px 15px; }
+  .anatomy-zone-picker .anatomy-system-buttons {
+    position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 240px; padding: 0; overflow-y: auto;
+  }
+  .anatomy-zone-picker .anatomy-system { width: 100%; white-space: normal; }
+  .anatomy-ultrasound-image { max-height: 220px; }
+  .anatomy-radiograph-tile { width: min(100%, 260px); }
 }

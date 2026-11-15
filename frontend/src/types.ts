@@ -5,6 +5,9 @@ export interface Astronaut {
   role: string;
   mission: string;
   scenario: string;
+  sex?: 'female' | 'male' | 'unspecified';
+  cycle_status?: 'active' | 'suppressed' | 'not_applicable' | 'unknown';
+  usual_cycle_length_days?: number | null;
   mission_start: string;
   is_synthetic: boolean;
 }

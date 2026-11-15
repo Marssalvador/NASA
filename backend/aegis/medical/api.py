@@ -78,7 +78,8 @@ def record(code: str, request: Request, user: str = Header(alias='X-AEGIS-User')
         'profile': asdict(profile),
         'latest': [{'biomarker_id': b, 'name': knowledge.biomarkers[b]['name'], 'value': o.value, 'unit': o.unit,
                     'measured_at': o.measured_at, 'quality': o.quality, 'is_synthetic': o.is_synthetic,
-                    'sensing_layer': knowledge.biomarkers[b].get('sensing_layer', 1), 'href': _link(o.id)}
+                    'sensing_layer': knowledge.biomarkers[b].get('sensing_layer', 1), 'context': o.context,
+                    'method': o.method, 'source': o.source, 'href': _link(o.id)}
                    for b, o in sorted(latest.items())],
         'events': [asdict(e) for e in engine.repo.events(profile.id)],
         'open_test_requests': [asdict(r) for r in engine.repo.requests(profile.id) if r.status != 'resulted'],

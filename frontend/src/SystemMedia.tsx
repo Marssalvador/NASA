@@ -116,20 +116,20 @@ export default function SystemMedia({
       )}
       {!frame && !failed && (
         <div className="anatomy-loader" role="status">
-          Preparando imagen anatómica…
+          Loading anatomical image…
         </div>
       )}
       {failed && (
         <div className="system-media-error" role="status">
-          No se pudo cargar la imagen.
-          <button onClick={() => setAttempt((n) => n + 1)}>Reintentar</button>
+          Could not load image.
+          <button onClick={() => setAttempt((n) => n + 1)}>Retry</button>
         </div>
       )}
       {!compact && showVideo && (
         <div className="system-media-caption">
           {showVideo && (
             <button
-              aria-label={paused ? 'Reproducir vídeo anatómico' : 'Pausar vídeo anatómico'}
+              aria-label={paused ? 'Play anatomical video' : 'Pause anatomical video'}
               onClick={() => setPaused((p) => !p)}
             >
               {paused ? <Play size={14} /> : <Pause size={14} />}

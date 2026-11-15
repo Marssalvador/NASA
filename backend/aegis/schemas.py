@@ -25,6 +25,9 @@ class Astronaut(Contract):
     mission: str
     scenario: Literal['stable', 'review', 'emergency']
     is_synthetic: bool = True
+    sex: Literal['female', 'male', 'unspecified'] = 'unspecified'
+    cycle_status: Literal['active', 'suppressed', 'not_applicable', 'unknown'] = 'not_applicable'
+    usual_cycle_length_days: int | None = Field(default=None, ge=21, le=45)
     mission_start: datetime
     _start_utc = field_validator('mission_start')(utc)
 
@@ -44,6 +47,8 @@ class BiomarkerDefinition(Contract):
     sensor_readiness: Literal['validated', 'experimental'] = 'validated'
     reference_source: str
     enabled: bool = True
+    allowed_values: list[float] | None = None
+    baseline_min_days: int | None = Field(default=None, ge=2)
 
 
 class Measurement(Contract):

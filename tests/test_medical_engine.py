@@ -47,7 +47,12 @@ def test_engine_reads_only_the_requested_astronaut(engine):
     every_id = {i for a in report['assessments'] for i in a['evidence_ids']}
     a112_ids = {o.id for o in engine.repo.observations(synthetic.A112)}
     assert not every_id & a112_ids
-    assert all(a['alert_level'] == 'green' for a in report['assessments'])
+    previous_risks = [a for a in report['assessments'] if a['risk_id'] not in {
+        'jugular_doppler_review', 'muscle_function_monitoring'}]
+    pulls_risks = [a for a in report['assessments'] if a['risk_id'] in {
+        'jugular_doppler_review', 'muscle_function_monitoring'}]
+    assert all(a['alert_level'] == 'green' for a in previous_risks)
+    assert all(a['alert_level'] == 'insufficient_data' for a in pulls_risks)
 
 
 # --- data quality, units, duplicates, missing ------------------------------------------------
@@ -274,6 +279,48 @@ def test_api_declared_cycle_event_is_timezone_aware_and_profile_scoped(api):
     assert api.post(path, headers=headers, json=body).status_code == 409
     assert api.post(path, headers={'X-AEGIS-User': 'user-a113'}, json=body).status_code == 404
     assert api.post(path, headers=headers, json={**body, 'started_at': '2026-11-15T08:00:00'}).status_code == 422
+
+
+def test_pulls_doppler_flags_are_binary_and_route_reported_findings_to_medical_review(api):
+    headers = {'X-AEGIS-User': 'user-a112'}
+    path = '/api/v2/astronauts/A-112/measurements'
+    body = {'format': 'json', 'is_synthetic': True, 'source': 'synthetic Doppler report', 'content': [{
+        'biomarker_id': 'jugular_thrombus_suspected_reported', 'value': 1, 'unit': 'flag',
+        'measured_at': '2026-11-12T08:00:00Z', 'quality': 'good',
+        'context': {'laterality': 'left', 'report_interpreted_externally': True},
+    }]}
+    assert api.post(path, headers=headers, json=body).json()['accepted'] == 1
+    invalid = {**body, 'content': [{**body['content'][0], 'value': 2, 'measured_at': '2026-11-12T09:00:00Z'}]}
+    assert api.post(path, headers=headers, json=invalid).status_code == 422
+    report = api.post('/api/v2/astronauts/A-112/evaluations', headers=headers,
+                      params={'as_of': '2026-11-12T10:00:00Z'}).json()
+    assert any(item['id'] == 'jugular.doppler_possible_thrombus' for item in report['protocol_matches'])
+    assessment = next(item for item in report['assessments'] if item['risk_id'] == 'jugular_doppler_review')
+    assert assessment['alert_level'] == 'orange'
+
+
+def test_pulls_muscle_alert_uses_two_weekly_force_and_eim_tests_against_preflight_baseline(api):
+    headers = {'X-AEGIS-User': 'user-a112'}
+    rows = []
+    for biomarker, unit, baseline, decline in [
+        ('hip_extensor_force', 'N', [100, 102, 98], [60, 61]),
+        ('eim_phase_angle_thigh', 'degree', [7.0, 7.2, 6.8], [4.5, 4.6]),
+    ]:
+        for day, value in zip(('2026-10-01', '2026-10-05', '2026-10-10'), baseline):
+            rows.append({'biomarker_id': biomarker, 'value': value, 'unit': unit,
+                         'measured_at': f'{day}T08:00:00Z', 'quality': 'good'})
+        for day, value in zip(('2026-11-01', '2026-11-08'), decline):
+            rows.append({'biomarker_id': biomarker, 'value': value, 'unit': unit,
+                         'measured_at': f'{day}T08:00:00Z', 'quality': 'good'})
+    imported = api.post('/api/v2/astronauts/A-112/measurements', headers=headers,
+                        json={'format': 'json', 'is_synthetic': True, 'source': 'synthetic PULLS strength/EIM tests',
+                              'content': rows})
+    assert imported.status_code == 200
+    report = api.post('/api/v2/astronauts/A-112/evaluations', headers=headers,
+                      params={'as_of': '2026-11-09T10:00:00Z'}).json()
+    assessment = next(item for item in report['assessments'] if item['risk_id'] == 'muscle_function_monitoring')
+    assert assessment['alert_level'] == 'yellow'
+    assert any(item['biomarker_id'] == 'creatine_kinase' for item in assessment['test_requests'])
 
 
 def test_api_import_is_atomic_and_detects_duplicates(api):
