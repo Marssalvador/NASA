@@ -70,6 +70,8 @@ const basics = [
   { id: 'lactate', title: 'Lactato', unit: 'mmol/L', group: 'Recuperación · experimental' },
 ];
 const sourceLinks = [
+  ['Datos humanos OSDR · Inspiration4', 'https://osdr.nasa.gov/bio/repo/data/missions/SpaceX%20Inspiration4'],
+  ['Solicitud de datos médicos NASA', 'https://www.nasa.gov/directorates/esdmd/hhp/human-health-and-performance-data-sharing/'],
   ['Peligros del HRP', 'https://www.nasa.gov/hrp/hazards/'],
   ['Riesgos del HRP', 'https://www.nasa.gov/hrp/risks/'],
   ['Investigación HRP', 'https://www.nasa.gov/hrp/ongoing-hrp-research/'],
@@ -86,6 +88,42 @@ const levelText: Record<RiskAssessment['alert_level'], string> = {
 const phaseText: Record<string, string> = {
   menstrual: 'Menstrual', follicular: 'Folicular', ovulatory: 'Ovulatoria', luteal: 'Lútea', unknown: 'Sin fase declarada',
 };
+
+const phaseOneSignals = [
+  'Frecuencia cardíaca / HRV para tono parasimpático y resistencia cardiovascular.',
+  'Temperatura corporal central para detectar riesgo térmico y sobreesfuerzo.',
+  'Glucosa e insulina para vigilar resistencia metabólica y gasto energético.',
+  'Hidratación y electrolitos (sodio, potasio, magnesio) para preservar función muscular y cardíaca.',
+  'Sueño y actividad física para detectar déficit de recuperación y desadaptación.',
+  'Lactato y esfuerzo para valorar umbral anaeróbico y capacidad metabólica.',
+];
+
+const predictiveRisks = [
+  { title: 'Riesgo óseo elevado', detail: 'Densidad mineral ósea, NTX, deoxipiridinolina, 8-OHdG y pérdida estimada >0,5–1 % mensual.' },
+  { title: 'Riesgo renal', detail: 'Perfil urinario de 24 h, calcio, oxalato, pH, citrato y riesgo de litiasis renal.' },
+  { title: 'Fatiga y sobrecarga acumulada', detail: 'Torque pico isocinético, T2, reclutamiento EMG y caída sostenida del estímulo voluntario.' },
+  { title: 'Inflamación y estrés oxidativo', detail: 'IL-1α, IL-1ra, TNF-α, IL-6, IL-8 y malondialdehído.' },
+];
+
+const interventionMatrix = [
+  { title: 'Nutrición', detail: 'Vitamina D, calcio, electrolitos, proteínas, leucina, carbohidratos y control del balance energético.' },
+  { title: 'Ejercicio', detail: 'Ajuste temporal de carga, recuperación activa y priorización de fuerza con ARED.' },
+  { title: 'Farmacología', detail: 'Solo bajo indicación médica; melatonina, bisfosfonatos, antibióticos y antihistamínicos solo si procede.' },
+];
+
+const femaleContext = [
+  'Uso continuado de anticonceptivos orales como estrategia para suprimir la menstruación durante la misión.',
+  'Ajuste nutricional específico para folato, vitamina B6, hierro y metabolismo femenino.',
+  'Interpretación de termorregulación y hemodinámica en el contexto hormonal femenino.',
+  'Consideración de variabilidad individual en la respuesta al entrenamiento y la recuperación.',
+];
+
+const conductRules = [
+  'Mantener un tono profesional, claro y orientado a la prevención.',
+  'Priorizar evidencia biomédica, evolución temporal y contexto fisiológico.',
+  'Si aparece riesgo relevante, recomendar medidas preventivas y vigilancia específica.',
+  'No sustituir la decisión final del equipo médico ni la supervisión clínica.',
+];
 
 function accountFor(code: string) {
   return accounts.find((item) => item.code === code) ?? accounts[0];
@@ -117,6 +155,7 @@ export default function MedicalIntelligence({ onClose }: { onClose: () => void }
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [testId, setTestId] = useState('heart_rate');
   const [value, setValue] = useState('');
   const [measuredAt, setMeasuredAt] = useState(() => new Date().toISOString().slice(0, 16));
@@ -130,6 +169,7 @@ export default function MedicalIntelligence({ onClose }: { onClose: () => void }
     const account = accountFor(selectedCode);
     const next = await medicalFetch<RecordData>(`/astronauts/${selectedCode}/record`, account, { signal });
     setRecord(next);
+    return next;
   }, []);
 
   useEffect(() => {
@@ -153,13 +193,16 @@ export default function MedicalIntelligence({ onClose }: { onClose: () => void }
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  async function runScreening() {
+  async function reviewData() {
     setBusy(true); setError(''); setNotice('');
     try {
+      // Read the latest measurements already ingested by the API before evaluating them.
+      const latest = await loadRecord(code);
       const result = await medicalFetch<Evaluation>(`/astronauts/${code}/evaluations`, selectedAccount, { method: 'POST' });
       setEvaluation(result);
       await loadRecord(code);
-      setNotice('Evaluación completa. Cada señal se comparó con el patrón individual disponible.');
+      setLastRefresh(new Date());
+      setNotice(`Expediente actualizado: ${latest.latest.length} señales disponibles. Evaluación recalculada con los datos recibidos por AEGIS.`);
     } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); }
     finally { setBusy(false); }
   }
@@ -215,12 +258,13 @@ export default function MedicalIntelligence({ onClose }: { onClose: () => void }
           <div className="mi-intro">
             <div>
               <span className="mi-eyebrow">BATERÍA INICIAL · TESTS BÁSICOS</span>
-              <p>Vamos a llevar a cabo primero unos test básicos.</p>
-              <p>Compara señales con el patrón individual y solicita comprobaciones específicas si una regla de investigación se activa.</p>
+              <p>Hola, astronauta. Esta evaluación forma parte del cribado fisiológico del Gemelo Digital de Salud Humana y está diseñada para detectar cambios precoces, contextualizar la evolución de los biomarcadores y apoyar decisiones preventivas del equipo médico.</p>
+              <p>Primero realizaremos pruebas básicas para medir frecuencia cardíaca, HRV, temperatura, glucosa, hidratación, electrolitos, sueño, actividad física y lactato. El motor mostrará patrones que el equipo médico puede revisar para valorar ajustes de entrenamiento, nutrición, descanso o vigilancia clínica; no establece diagnósticos.</p>
+              {lastRefresh && <small className="mi-refresh-time">Última revisión: {lastRefresh.toLocaleTimeString('es-ES')} · {record?.latest.length ?? 0} señales disponibles</small>}
             </div>
-            <button className="mi-run" disabled={busy || loading || !record} onClick={runScreening}>
+            <button className="mi-run" disabled={busy || loading || !record} onClick={reviewData}>
               {busy ? <LoaderCircle className="mi-spin" size={16} /> : <Activity size={16} />}
-              {busy ? 'Procesando…' : 'Ejecutar evaluación'}
+              {busy ? 'Revisando…' : 'Revisar datos'}
             </button>
           </div>
 
@@ -238,6 +282,88 @@ export default function MedicalIntelligence({ onClose }: { onClose: () => void }
           </section>
 
           <div className="mi-model-note"><CircleHelp size={15} /><span>El atlas 3D principal es una referencia anatómica genérica compartida; este repositorio no incluye una malla corporal femenina alternativa. Sexo y ciclo contextualizan la evaluación, no cambian la anatomía del atlas.</span></div>
+
+          <section className="mi-section">
+            <div className="mi-section-heading">
+              <div>
+                <span className="mi-eyebrow">FASE 1 · CRIBADO FISIOLÓGICO</span>
+                <h2>Parámetros básicos</h2>
+              </div>
+            </div>
+            <div className="mi-phase-grid">
+              {phaseOneSignals.map((signal) => (
+                <article className="mi-phase-card" key={signal}>
+                  <span className="mi-pill">Monitorización</span>
+                  <p>{signal}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="mi-section">
+            <div className="mi-section-heading">
+              <div>
+                <span className="mi-eyebrow">FASE 2 · ANÁLISIS PREDICTIVO</span>
+                <h2>Grandes áreas de riesgo</h2>
+              </div>
+            </div>
+            <div className="mi-phase-grid">
+              {predictiveRisks.map((risk) => (
+                <article className="mi-phase-card" key={risk.title}>
+                  <span className="mi-pill risk-pill">Riesgo</span>
+                  <h3>{risk.title}</h3>
+                  <p>{risk.detail}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="mi-section">
+            <div className="mi-section-heading">
+              <div>
+                <span className="mi-eyebrow">MATRIZ DE SOLUCIONES</span>
+                <h2>Medidas preventivas adaptadas</h2>
+              </div>
+            </div>
+            <div className="mi-phase-grid">
+              {interventionMatrix.map((item) => (
+                <article className="mi-phase-card" key={item.title}>
+                  <span className="mi-pill accent-pill">Inervación</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.detail}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="mi-section">
+            <div className="mi-section-heading">
+              <div>
+                <span className="mi-eyebrow">PERFIL FEMENINO</span>
+                <h2>Contexto endocrino y reproductivo</h2>
+              </div>
+            </div>
+            <div className="mi-phase-grid">
+              {femaleContext.map((point) => (
+                <article className="mi-phase-card" key={point}>
+                  <span className="mi-pill accent-pill">Mujer</span>
+                  <p>{point}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="mi-section">
+            <div className="mi-section-heading">
+              <div>
+                <span className="mi-eyebrow">REGLAS DE CONDUCTA</span>
+                <h2>Operación del asistente</h2>
+              </div>
+            </div>
+            <ul className="mi-rule-list">
+              {conductRules.map((rule) => <li key={rule}>{rule}</li>)}
+            </ul>
+          </section>
 
           <section className="mi-section">
             <div className="mi-section-heading"><div><span className="mi-eyebrow">CAPA 1 · AUTOCONTROL</span><h2>Señales básicas</h2></div><span className="mi-provenance"><span /> Simulado</span></div>
@@ -286,10 +412,10 @@ export default function MedicalIntelligence({ onClose }: { onClose: () => void }
           </section>
 
           <section className="mi-evidence">
-            <div><span className="mi-eyebrow">BASE DE EVIDENCIA · CONTEXTO, NO ENTRENAMIENTO</span><p>NASA HRP define peligros y riesgos e investiga contramedidas; la CSA describe el desarrollo de dosímetros. Estos enlaces no son un conjunto de entrenamiento ni validan reglas clínicas.</p></div>
+            <div><span className="mi-eyebrow">DATOS ABIERTOS Y CONTEXTO · NO ENTRENAMIENTO CLÍNICO</span><p>OSDR publica estudios humanos de Inspiration4 con cuatro participantes y muestras de laboratorio de una misión de tres días; sirven para investigación exploratoria, pero no aportan volumen ni etiquetas diagnósticas suficientes para entrenar un modelo clínico de enfermedades. El acceso a datos médicos protegidos de NASA requiere solicitud y revisión. HRP y CSA aportan contexto, no etiquetas diagnósticas.</p></div>
             <div>{sourceLinks.map(([label, href]) => <a href={href} key={href} target="_blank" rel="noreferrer">{label}<span>↗</span></a>)}</div>
           </section>
-          <p className="mi-footer-note">Los expedientes A-112/A-113 son sintéticos. Las entradas manuales de este panel se guardan siempre como sintéticas y nunca se mezclan con datos reales. La interfaz no sustituye al equipo médico de la misión.</p>
+          <p className="mi-footer-note">«Revisar datos» obtiene las pruebas que el backend ya haya recibido; todavía no se conecta directamente a analizadores o dispositivos. Los expedientes A-112/A-113 son sintéticos. Las entradas manuales se guardan como sintéticas y no se mezclan con datos reales. Esta herramienta no diagnostica ni sustituye al equipo médico de la misión.</p>
         </div>
       </section>
     </div>
